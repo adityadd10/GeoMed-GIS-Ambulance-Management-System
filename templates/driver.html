@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Driver Portal</h1>
+        <p class="page-subtitle">Manage your active ambulance task.</p>
+    </div>
+</div>
+
+{% if not ambulance %}
+<div class="card p-6 mt-4">
+    <div class="text-center text-gray">
+        <i class="fa-solid fa-triangle-exclamation fa-3x mb-4 text-yellow-500"></i>
+        <h3>No Ambulance Assigned</h3>
+        <p>Please contact the admin to get an ambulance assigned to your account.</p>
+    </div>
+</div>
+{% else %}
+
+<div class="grid grid-cols-3 gap-6 mt-4">
+    <!-- Driver Info -->
+    <div class="col-span-1">
+        <div class="card p-4">
+            <h3 class="border-b pb-2 mb-4">Vehicle Details</h3>
+            <p><strong>Vehicle:</strong> {{ ambulance.vehicle_number }}</p>
+            <p><strong>Status:</strong> <span class="status-badge status-{{ ambulance.status }}">{{ ambulance.status|title }}</span></p>
+            <p><strong>Odometer:</strong> {{ ambulance.current_odometer }} km</p>
+        </div>
+        {% if active_task %}
+        <div class="card p-4 mt-4">
+            <h3 class="border-b pb-2 mb-4">Task Summary</h3>
+            <ul class="space-y-2 text-sm">
+                <li class="{% if active_task.status in ['accepted', 'en_route', 'at_scene','transporting','completed']%}text-green-600 font-bold{%endif%}">
+                    1. Task Accepted    
+                </li>
+                <li class="{% if active_task.status in ['en_route', 'at_scene','transporting','completed']%}text-green-600 font-bold{%endif%}">
+                    2. En Route 
+                </li>
+                <li class="{% if active_task.status in ['at_scene','transporting','completed']%}text-green-600 font-bold{%endif%}">
+                    3. At Scene
+                </li>
+                <li class="{% if active_task.status in ['transporting','completed']%}text-green-600 font-bold{%endif%}">
+                    4. Transporting
+                </li>
+                <li class="{% if active_task.status == 'completed'%}text-green-600 font-bold{%endif%}">
+                    5. Completed
+                </li>   
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Active Task -->
+    <div class="col-span-2">
+        {% if active_task %}
+        <div class="card p-6 border-l-4 border-blue-500">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3>Active Dispatch: Task #{{ active_task.id }}</h3>
+                    <p class="text-gray text-sm">Request #{{ active_task.request_id }}</p>
+                </div>
+                <span class="status-badge status-{{ active_task.status }}">{{ active_task.status|replace('_', ' ')|title }}</span>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded mb-4">
+                <p><strong>Patient:</strong> {{ active_task.request.patient.name }}</p>
+                <p><strong>Pickup:</strong> {{ active_task.request.pickup_location }}</p>
+                <p><strong>Emergency:</strong> {{ active_task.request.emergency_type|title }}</p>
+                <p><strong>Symptoms:</strong> {{ active_task.request.symptoms }}</p>
+                <p><strong>ETA:</strong> {{ active_task.estimated_duration_min|round(1) if active_task.estimated_duration_min else 'N/A' }} minutes</p>
+            </div>
+
+            <!--Lifecycle Actions Button-->
+            <div class="flex flex-wrap gap-3 mb-4">
+                {% if active_task.status == 'assigned' %}
+
+                <form action="{{ url_for('driver.accept_task', task_id=active_task.id) }}" method="POST">
+
+                    <button type="submit" class="btn btn-primary">
+
+                        <i class="fa-solid fa-check"></i> Accept Task
+
+                    </button>
+
+                </form>
+
+                {% endif %}
+
+                {% if active_task.status == 'accepted' %}
+
+                <form action="{{ url_for('driver.en_route_task', task_id=active_task.id) }}" method="POST">
+
+                    <button type="submit" class="btn btn-secondary">
+
+                        <i class="fa-solid fa-location-arrow"></i> Mark En Route
+
+                    </button>
+
+                </form>
+
+                {% endif %}
+
+                {% if active_task.status == 'en_route' %}
+
+                <form action="{{ url_for('driver.mark_at_scene', task_id=active_task.id) }}" method="POST">
+
+                    <button type="submit" class="btn btn-secondary">
+
+                        <i class="fa-solid fa-map-pin"></i> Arrived at Pickup
+
+                    </button>
+
+                </form>
+
+                {% endif %}
+
+                {% if active_task.status == 'at_scene' %}
+
+                <form action="{{ url_for('driver.mark_transporting', task_id=active_task.id) }}" method="POST">
+
+                    <button type="submit" class="btn btn-secondary">
+
+                        <i class="fa-solid fa-bed-pulse"></i> Patient Onboard
+
+                    </button>
+
+                </form>
+
+                {% endif %}
+            </div>
+
+            <!-- Simulation and Navigation -->
+            <div class="flex gap-4 flex-wrap" id="driver-actions">
+                <button class="btn btn-primary btn-lg" onclick="startSimulatedTrip()"><i class="fa-solid fa-play"></i> Start Trip Simulation</button>
+                <a href="https://www.google.com/maps/dir/?api=1&destination={{ active_task.request.latitude }},{{ active_task.request.longitude }}" target="_blank" class="btn btn-secondary">
+                    <i class="fa-solid fa-location-arrow"></i> Open Navigation
+                </a>
+            </div>
+            
+            <div id="simulation-status" class="mt-4 hidden p-3 rounded bg-blue-100 text-blue-800 text-center font-bold"></div>
+            
+            <!-- Hidden form for auto-submit -->
+            <form id="autoCompleteForm" action="{{ url_for('driver.complete_task', task_id=active_task.id) }}" method="POST" style="display:none;">
+                <input type="hidden" name="start_odometer" id="auto_start_odo" value="{{ ambulance.current_odometer }}">
+                <input type="hidden" name="end_odometer" id="auto_end_odo">
+                <input type="hidden" name="driver_notes" value="Trip automatically logged via simulation.">
+                <input type="hidden" name="route_geometry" id="auto_route_geometry">
+                <input type="hidden" name="route_source" id="auto_route_source" value="simulation">
+            </form>
+            
+            <!-- Map Container -->
+            <div class="mt-4 border rounded" style="overflow: hidden;">
+                <div id="driver-map" style="height: 300px; z-index: 1;"></div>
+            </div>
+        </div>
+        
+        {% else %}
+        <div class="card p-6 text-center text-gray flex flex-col items-center justify-center h-full min-h-[200px]">
+            <i class="fa-regular fa-circle-check fa-3x mb-4 text-green-500"></i>
+            <h3>No Active Tasks</h3>
+            <p>You are currently available. Stand by for dispatch.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/map_core.js') }}"></script>
+<script>
+    let mapCore;
+    let ambulanceMarker;
+    let currentRouteGeometry = [];
+    let currentDistance = 0;
+    let currentRouteDuration = 0;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        {% if active_task %}
+        mapCore = new GeoMedMap('driver-map');
+        const ambLat = {{ ambulance.current_lat }};
+        const ambLon = {{ ambulance.current_lon }};
+        const reqLat = {{ active_task.request.latitude }};
+        const reqLon = {{ active_task.request.longitude }};
+        
+        // Custom Ambulance Marker for animation
+        ambulanceMarker = L.marker([ambLat, ambLon], {
+            icon: L.divIcon({
+                className: 'ambulance-anim-marker',
+                html: '<i class="fas fa-ambulance" style="color: white; font-size: 16px; background: #3b82f6; padding: 6px; border-radius: 50%;"></i>',
+                iconSize: [30, 30]
+            })
+        }).addTo(mapCore.map);
+        
+        mapCore.updateRequests([{
+            id: {{ active_task.request.id }},
+            pickup_location: "{{ active_task.request.pickup_location }}",
+            emergency_type: "{{ active_task.request.emergency_type }}",
+            latitude: reqLat,
+            longitude: reqLon
+        }]);
+        
+        // Fetch Route to Patient
+        fetch('/api/gis/route', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                start: [ambLat, ambLon],
+                end: [reqLat, reqLon],
+                location_name: "{{ active_task.request.pickup_location }}"
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.geometry) {
+                currentRouteGeometry = data.geometry;
+                currentDistance += data.distance;
+                currentRouteDuration += data.duration;
+                const routeLine = L.polyline(data.geometry, {color: 'blue', weight: 4, dashArray: '5, 10'}).addTo(mapCore.map);
+                mapCore.map.fitBounds(routeLine.getBounds(), {padding: [50, 50]});
+                
+                // Pre-fetch return route to hospital (assuming hospital is at base coords)
+                fetch('/api/gis/route', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        start: [reqLat, reqLon],
+                        end: [19.1309507, 72.9146062] // Hospital Base
+                    })
+                })
+                .then(r => r.json())
+                .then(returnData => {
+                    if(returnData.geometry) {
+                        currentRouteGeometry = currentRouteGeometry.concat(returnData.geometry);
+                        currentDistance += returnData.distance || 0;
+                        currentRouteDuration += returnData.duration || 0;
+                    }
+                });
+            }
+        });
+        {% endif %}
+    });
+
+    function startSimulatedTrip() {
+        if(!currentRouteGeometry.length) return alert("Route not loaded yet.");
+        
+        document.getElementById('driver-actions').classList.add('hidden');
+        const statusEl = document.getElementById('simulation-status');
+        statusEl.classList.remove('hidden');
+        statusEl.innerText = "🚑 Driving to patient...";
+        
+        let index = 0;
+        const totalPoints = currentRouteGeometry.length;
+        const midpoint = Math.floor(totalPoints / 2);
+        
+        const simulatedMinutes = currentRouteDuration || 10;
+        let totalAnimationMs = simulatedMinutes * 2000;
+        totalAnimationMs = Math.max(12000, Math.min(totalAnimationMs, 35000));
+        const stepInterval = Math.max(80,Math.floor(totalAnimationMs / totalPoints));
+        const interval = setInterval(() => {
+            if (index < totalPoints - 1) {
+                index++;
+                ambulanceMarker.setLatLng(currentRouteGeometry[index]);
+                
+                if(index === midpoint) {
+                    statusEl.innerText = "🏥 Patient picked up. Returning to hospital...";
+                }
+            } else {
+                clearInterval(interval);
+                statusEl.innerText = "✅ Arrived at hospital. Logging trip...";
+                
+                // Auto Complete
+                const startOdo = parseFloat(document.getElementById('auto_start_odo').value);
+                document.getElementById('auto_end_odo').value = (startOdo + currentDistance).toFixed(2);
+                document.getElementById('auto_route_geometry').value = JSON.stringify(currentRouteGeometry);
+                document.getElementById('auto_route_source').value = 'simulation';
+                setTimeout(() => {
+                    document.getElementById('autoCompleteForm').submit();
+                }, 1500);
+            }
+        }, 100);
+    }
+</script>
+<style>
+.hidden { display: none !important; }
+</style>
+{% endblock %}

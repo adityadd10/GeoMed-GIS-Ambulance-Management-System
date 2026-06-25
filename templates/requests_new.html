@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">New Patient Request</h1>
+        <p class="page-subtitle">Create a new ambulance request.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('requests.index') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="card p-6 mt-4 max-w-3xl">
+    <form method="POST" action="{{ url_for('requests.new_request') }}">
+        <div class="form-grid">
+            <div class="form-group col-span-2">
+                <label>Patient Name *</label>
+                <input type="text" name="patient_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Age</label>
+                <input type="number" name="patient_age">
+            </div>
+            
+            <div class="form-group">
+                <label>Gender</label>
+                <select name="patient_gender">
+                    <option value="">Select...</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="O">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group col-span-2">
+                <label>Phone Number</label>
+                <input type="text" name="patient_phone">
+            </div>
+
+            <div class="form-group col-span-2">
+                <label>Campus Location (Pickup) *</label>
+                <select name="pickup_location" id="location-select" required onchange="updateCoords()">
+                    <option value="">Select location...</option>
+                    {% for name, coords in locations.items() %}
+                    <option value="{{ name }}" data-lat="{{ coords[0] }}" data-lon="{{ coords[1] }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Hidden inputs for coordinates -->
+            <input type="hidden" name="latitude" id="lat-input" value="19.1309507">
+            <input type="hidden" name="longitude" id="lon-input" value="72.9146062">
+
+            <div class="form-group col-span-2">
+                <label>Symptoms / Reason</label>
+                <textarea name="symptoms" rows="3" placeholder="Describe the symptoms..."></textarea>
+            </div>
+
+            <div class="form-group col-span-2">
+                <button type="submit" class="btn btn-primary mt-4">Create Request</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+function updateCoords() {
+    const select = document.getElementById('location-select');
+    const option = select.options[select.selectedIndex];
+    if(option.value) {
+        document.getElementById('lat-input').value = option.dataset.lat;
+        document.getElementById('lon-input').value = option.dataset.lon;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Dispatch Tasks</h1>
+        <p class="page-subtitle">Track ambulance assignments and trip progress.</p>
+    </div>
+</div>
+
+<div class="data-table-container card mt-4">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Task ID</th>
+                <th>Patient</th>
+                <th>Pickup Location</th>
+                <th>Emergency</th>
+                <th>Ambulance</th>
+                <th>Request Status</th>
+                <th>Task Status</th>
+                <th>Assigned By</th>
+                <th>ETA</th>
+                <th>Actual Time</th>
+                <th>Assigned Time</th>
+                <th>Completed Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>#{{ task.id }}</td>
+                <td>
+                    {% if task.request and task.request.patient %}
+                    <strong>{{ task.request.patient.name }}</strong>
+                    <div class="text-xs text-gray">{{ task.request.patient.hostel if task.request.patient.hostel else 'N/A' }}</div>
+                    {% else %}
+                    N/A
+                    {% endif %}
+                </td>
+                <td>
+                    {% if task.request %}
+                    {{ task.request.pickup_location }}
+                    {% else %}
+                    N/A
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if task.request %}
+                    {% if task.request.ml_emergency_type %}
+                    <span class="badge badge-outline">
+                        <i class="fa-solid fa-robot text-gray"></i> {{ task.request.ml_emergency_type|title }}
+                    </span>
+                    {% else %}
+                    {{ task.request.emergency_type|title }}
+                    {% endif %}
+                    {% else %}
+                    N/A
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if task.ambulance %}
+                    <i class="fa-solid fa-truck-medical text-gray"></i> {{ task.ambulance.vehicle_number }}
+                            <div class="text-xs text-gray">Driver: NA </div>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>   
+
+                <td>
+                    {% if task.request %}
+                    <span class="status-badge status-{{ task.request.status }}">{{ task.request.status|replace('_', ' ')|title }}</span>
+                    {% else %}
+                    N/A
+                    {% endif %}
+                </td>
+
+                <td>
+                    <span class="status-badge status-{{ task.status }}">{{ task.status|replace('_', ' ')|title }}</span>
+                </td>
+
+                <td>{{ task.assigned_by.name if task.assigned_by else 'System' }}</td>
+
+                <td>
+
+                    {% if task.estimated_duration_min %}
+
+                        {{ task.estimated_duration_min|round(1) }} mins
+
+                    {% else %}
+
+                        N/A
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    {% if task.actual_duration_minutes %}
+
+                        {{ task.actual_duration_minutes|round(1) }} mins
+
+                    {% else %}
+
+                        N/A
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    {{ task.assigned_time.strftime('%Y-%m-%d %H:%M') if task.assigned_time else 'N/A' }}
+
+                </td>
+
+                <td>
+
+                    {{ task.completed_time.strftime('%Y-%m-%d %H:%M') if task.completed_time else 'N/A' }}
+
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

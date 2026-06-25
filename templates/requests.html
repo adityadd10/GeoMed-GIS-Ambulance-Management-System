@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Patient Requests</h1>
+        <p class="page-subtitle">Manage emergency and transport requests.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('requests.new_request') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> New Request
+        </a>
+    </div>
+</div>
+
+<div class="filters-bar">
+    <a href="?status=all" class="filter-btn {% if current_filter == 'all' %}active{% endif %}">All</a>
+    <a href="?status=pending" class="filter-btn {% if current_filter == 'pending' %}active{% endif %}">Pending <span class="badge">{{ status_counts['pending'] }}</span></a>
+    <a href="?status=assigned" class="filter-btn {% if current_filter == 'assigned' %}active{% endif %}">Assigned <span class="badge">{{ status_counts['assigned'] }}</span></a>
+    <a href="?status=completed" class="filter-btn {% if current_filter == 'completed' %}active{% endif %}">Completed</a>
+</div>
+
+<div class="data-table-container card mt-4">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Time</th>
+                <th>Patient</th>
+                <th>Location</th>
+                <th>Emergency Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td>#{{ req.id }}</td>
+                <td>{{ req.request_time.strftime('%Y-%m-%d %H:%M') if req.request_time else '' }}</td>
+                <td>
+                    <strong>{{ req.patient.name if req.patient else 'Unknown' }}</strong>
+                    <div class="text-xs text-gray">{{ req.patient.hostel if req.patient else '' }}</div>
+                </td>
+                <td>{{ req.pickup_location }}</td>
+                <td>
+                    {% if req.ml_emergency_type %}
+                        <span class="badge badge-outline" title="ML Confidence: {{ req.ml_confidence }}%">
+                            <i class="fa-solid fa-robot"></i> {{ req.ml_emergency_type|title }}
+                        </span>
+                    {% else %}
+                        {{ req.emergency_type|title }}
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="status-badge status-{{ req.status }}">{{ req.status|title }}</span>
+                </td>
+                <td>
+                    {% if req.status == 'pending' %}
+                    <button class="btn btn-sm btn-primary" onclick="openDispatchModal({{ req.id }})">Dispatch</button>
+                    <form action="{{ url_for('requests.cancel_request', request_id=req.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Cancel request?')">Cancel</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center py-4 text-gray">No requests found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Dispatch Modal -->
+<div id="dispatchModal" class="modal" style="display:none;">
+    <div class="modal-content max-w-md">
+        <h3>Dispatch Ambulance</h3>
+        <p class="text-sm text-gray mb-4">Select an available ambulance to dispatch for Request #<span id="dispatchReqId"></span></p>
+        
+        <div id="ambulanceList" class="mb-4">
+            <p class="text-center text-gray"><i class="fa-solid fa-spinner fa-spin"></i> Loading available ambulances...</p>
+        </div>
+        
+        <div class="flex gap-2">
+            <button type="button" class="btn btn-secondary" onclick="closeDispatchModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentDispatchReqId = null;
+
+function openDispatchModal(reqId) {
+    currentDispatchReqId = reqId;
+    document.getElementById('dispatchReqId').innerText = reqId;
+    document.getElementById('dispatchModal').style.display = 'flex';
+    
+    // Fetch ambulances
+    fetch('/api/gis/ambulances')
+        .then(r => r.json())
+        .then(data => {
+            const list = document.getElementById('ambulanceList');
+            list.innerHTML = '';
+            
+            const available = data.filter(a => a.status === 'available');
+            if(available.length === 0) {
+                list.innerHTML = '<div class="alert-warning p-2 rounded">No available ambulances right now!</div>';
+                return;
+            }
+            
+            available.forEach(amb => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-outline w-full mb-2 text-left flex justify-between items-center p-3 border rounded hover:bg-gray-50';
+                btn.innerHTML = `
+                    <div>
+                        <i class="fa-solid fa-truck-medical text-green-600"></i> <strong>${amb.vehicle_number}</strong>
+                        <div class="text-xs text-gray">Driver: ${amb.driver_name}</div>
+                    </div>
+                    <span class="badge bg-green-100 text-green-800">Assign</span>
+                `;
+                btn.onclick = () => assignAmbulance(amb.id);
+                list.appendChild(btn);
+            });
+        });
+}
+
+function closeDispatchModal() {
+    document.getElementById('dispatchModal').style.display = 'none';
+    currentDispatchReqId = null;
+}
+
+function assignAmbulance(ambId) {
+    if(!currentDispatchReqId) return;
+    
+    fetch('/api/dispatch/assign', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            request_id: currentDispatchReqId,
+            ambulance_id: ambId
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.error) {
+            alert("Error: " + data.error);
+        } else {
+            window.location.reload();
+        }
+    });
+}
+</script>
+{% endblock %}

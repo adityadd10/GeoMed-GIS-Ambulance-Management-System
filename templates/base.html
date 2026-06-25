@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoMed | IITB Ambulance Dispatch</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/geomed.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="app-layout">
+        {% if current_user.is_authenticated %}
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-truck-medical"></i>
+                <span>GeoMed</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">MAIN</div>
+                <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if page == 'dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </a>
+                
+                {% if current_user.role in ['admin', 'staff'] %}
+                <a href="{{ url_for('requests.index') }}" class="nav-item {% if page == 'requests' %}active{% endif %}">
+                    <i class="fa-solid fa-bed-pulse"></i> Patient Requests
+                </a>
+                <a href="{{ url_for('tasks.index') }}" class="nav-item {% if page == 'tasks' %}active{% endif %}">
+                    <i class="fa-solid fa-list-check"></i> Dispatch Tasks
+                </a>
+                <a href="{{ url_for('analytics.index') }}" class="nav-item {% if page == 'analytics' %}active{% endif %}">
+                    <i class="fa-solid fa-map-location-dot"></i> GIS Analytics
+                </a>
+                {% endif %}
+
+                {% if current_user.role == 'driver' %}
+                <a href="{{ url_for('driver.index') }}" class="nav-item {% if page == 'driver' %}active{% endif %}">
+                    <i class="fa-solid fa-steering-wheel"></i> Driver Portal
+                </a>
+                {% endif %}
+                
+                {% if current_user.role == 'admin' %}
+                <div class="nav-section mt-4">MANAGEMENT</div>
+                <a href="{{ url_for('admin.index') }}" class="nav-item {% if page == 'admin' %}active{% endif %}">
+                    <i class="fa-solid fa-users-gear"></i> Administration
+                </a>
+                {% endif %}
+                
+                <div class="nav-section mt-4">SYSTEM</div>
+                <a href="/legacy" class="nav-item">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Legacy View
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="nav-item text-danger">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </nav>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    {{ current_user.name[:2].upper() }}
+                </div>
+                <div class="user-info">
+                    <span class="user-name">{{ current_user.name }}</span>
+                    <span class="user-role">{{ current_user.role|title }}</span>
+                </div>
+            </div>
+        </aside>
+        {% endif %}
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Flash Messages -->
+            <div class="flash-container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="flash-alert alert-{{ category }}">
+                                <i class="fa-solid fa-circle-info"></i> {{ message }}
+                                <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Page Content -->
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

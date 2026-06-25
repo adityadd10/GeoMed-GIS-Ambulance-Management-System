@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Operations Dashboard</h1>
+        <p class="page-subtitle">Real-time overview of IITB ambulance fleet and requests.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('requests.new_request') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> New Request
+        </a>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Stat Cards -->
+    <div class="stat-card">
+        <div class="stat-icon bg-blue-100 text-blue-600">
+            <i class="fa-solid fa-truck-medical"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Available Ambulances</h3>
+            <p class="stat-number" id="active-amb-count">0</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-yellow-100 text-yellow-600">
+            <i class="fa-solid fa-bell"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Pending Requests</h3>
+            <p class="stat-number" id="pending-req-count">0</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-red-100 text-red-600">
+            <i class="fa-solid fa-fire"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Active Hotspots</h3>
+            <p class="stat-number" id="hotspot-count">0</p>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-main-content">
+    <div class="map-container card">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-map"></i> Live Campus Map</h3>
+        </div>
+        <div id="live-map" style="height: 500px; border-radius: 0 0 12px 12px; z-index: 1;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/map_core.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const mapCore = new GeoMedMap('live-map');
+        
+        // Fetch ambulances and requests periodically
+        function updateDashboard() {
+            fetch('/api/gis/ambulances')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('active-amb-count').innerText = data.length;
+                    mapCore.updateAmbulances(data);
+                });
+                
+            fetch('/api/gis/requests/pending')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('pending-req-count').innerText = data.length;
+                    mapCore.updateRequests(data);
+                });
+        }
+        
+        updateDashboard();
+        setInterval(updateDashboard, 5000);
+    });
+</script>
+{% endblock %}
