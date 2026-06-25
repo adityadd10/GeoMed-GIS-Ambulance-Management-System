@@ -5,6 +5,7 @@ Phase 5: Advanced analytics + route frequency intelligence
 
 """
 
+
 from collections import Counter
 
 from datetime import datetime, date
@@ -21,7 +22,7 @@ from . import analytics_bp
 
 import json
 
-from blueprints import analytics
+from flask import render_template
 
 
 
@@ -127,6 +128,15 @@ def _segment_key(p1, p2, precision=4):
 
     return tuple(sorted([a, b]))
 
+
+
+@analytics_bp.route('/analytics')
+
+@login_required
+
+def index():
+
+    return render_template('analytics.html', page='analytics')
 
 
 @analytics_bp.route('/analytics/overview', methods=['GET'])
@@ -237,7 +247,9 @@ def analytics_overview():
 
         "peak_hour_count": peak_count
 
-    })@analytics_bp.route('/analytics/highlights', methods=['GET'])
+    })
+
+@analytics_bp.route('/api/analytics/highlights', methods=['GET'])
 
 @login_required
 
@@ -374,6 +386,7 @@ def analytics_trips_by_hour():
     results = [{"hour": hour, "count": counter[hour]} for hour in range(24)]
 
     return jsonify(results)
+
 @analytics_bp.route('/analytics/category-distribution', methods=['GET'])
 
 @login_required
@@ -472,6 +485,8 @@ def analytics_busiest_ambulances():
     results = [{"ambulance": key, "count": value} for key, value in counter.most_common()]
 
     return jsonify(results)
+
+
 @analytics_bp.route('/analytics/performance', methods=['GET'])
 
 @login_required
@@ -547,6 +562,8 @@ def analytics_performance():
         "on_time_rate_percent": on_time_rate
 
     })
+
+
 @analytics_bp.route('/analytics/route-frequency', methods=['GET'])
 
 @login_required

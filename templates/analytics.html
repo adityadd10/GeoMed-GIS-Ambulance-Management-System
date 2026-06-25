@@ -1,103 +1,521 @@
-{% extends "base.html" %}
+{% extends "base.html" %} 
 
-{% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">GIS Analytics & AI Insights</h1>
-        <p class="page-subtitle">Historical trip data, demand forecasting, and hotspot detection.</p>
-    </div>
-</div>
+ 
 
-<div class="grid grid-cols-2 gap-6 mt-4">
-    <!-- Map Container -->
-    <div class="col-span-2">
-        <div class="card">
-            <div class="card-header flex justify-between items-center">
-                <h3><i class="fa-solid fa-map-location-dot"></i> Heatmap & Hotspots</h3>
-                <div class="flex gap-2">
-                    <button class="btn btn-sm btn-secondary" onclick="loadHotspots()"><i class="fa-solid fa-fire"></i> Show AI Hotspots</button>
-                    <button class="btn btn-sm btn-secondary" onclick="loadTrips()"><i class="fa-solid fa-route"></i> Show Trips</button>
-                </div>
-            </div>
-            <div id="analytics-map" style="height: 500px; border-radius: 0 0 12px 12px; z-index: 1;"></div>
-        </div>
-    </div>
-    
-    <!-- AI Forecast -->
-    <div class="card">
-        <div class="card-header">
-            <h3><i class="fa-solid fa-chart-line"></i> 7-Day Demand Forecast</h3>
-        </div>
-        <div class="p-4" id="forecast-container">
-            <p class="text-gray text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading ML forecast...</p>
-        </div>
-    </div>
-</div>
-{% endblock %}
+{% block content %} 
 
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/map_core.js') }}"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const mapCore = new GeoMedMap('analytics-map');
-        window.mapCore = mapCore;
-        
-        // Load ML Forecast
-        fetch('/api/ml/forecast')
-            .then(r => r.json())
-            .then(data => {
-                const container = document.getElementById('forecast-container');
-                if(data.error) {
-                    container.innerHTML = `<div class="alert-danger p-3 rounded">${data.error}</div>`;
-                    return;
-                }
-                
-                let html = '<div class="forecast-grid">';
-                data.forEach(d => {
-                    const dateObj = new Date(d.date);
-                    const day = dateObj.toLocaleDateString('en-US', {weekday: 'short'});
-                    html += `
-                        <div class="text-center p-3 border rounded ${d.is_weekend ? 'bg-gray-50' : ''}">
-                            <div class="text-sm text-gray font-bold">${day}</div>
-                            <div class="text-xl font-bold text-blue-600 my-2">${d.expected_requests}</div>
-                            <div class="text-xs text-gray">Calls</div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                container.innerHTML = html;
-            });
-    });
-    
-    function loadHotspots() {
-        fetch('/api/ml/hotspots')
-            .then(r => r.json())
-            .then(data => {
-                if(data.error) return alert(data.error);
-                window.mapCore.updateHotspots(data);
-            });
-    }
-    
-    function loadTrips() {
-        fetch('/api/trips')
-            .then(r => r.json())
-            .then(data => {
-                if(data.error) return alert(data.error);
-                // Implementation to draw historical routes
-                data.forEach(trip => {
-                    if(trip.route_geometry) {
-                        try {
-                            const geom = JSON.parse(trip.route_geometry);
-                            if(geom && geom.length > 0) {
-                                L.polyline(geom, {color: 'blue', weight: 3, opacity: 0.5}).addTo(window.mapCore.map);
-                            }
-                        } catch(e) {}
-                    }
-                });
-            });
-    }
-</script>
-<style>
-.forecast-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
-</style>
-{% endblock %}
+<div class="page-header"> 
+
+    <div> 
+
+        <h1 class="page-title">GIS Analytics & AI Insights</h1> 
+
+        <p class="page-subtitle">Historical trip data, hotspot intelligence, route density, and operational performance.</p> 
+
+    </div> 
+
+</div> 
+
+ 
+
+<!-- KPI CARDS --> 
+
+<div class="analytics-kpi-grid mt-4"> 
+
+    <div class="card p-4"> 
+
+        <div class="text-sm text-gray">Total Trips</div> 
+
+        <div class="text-2xl font-bold mt-1" id="kpi-total-trips">--</div> 
+
+    </div> 
+
+ 
+
+    <div class="card p-4"> 
+
+        <div class="text-sm text-gray">Total Distance</div> 
+
+        <div class="text-2xl font-bold mt-1" id="kpi-total-distance">--</div> 
+
+    </div> 
+
+ 
+
+    <div class="card p-4"> 
+
+        <div class="text-sm text-gray">Avg ETA</div> 
+
+        <div class="text-2xl font-bold mt-1" id="kpi-avg-eta">--</div> 
+
+    </div> 
+
+ 
+
+    <div class="card p-4"> 
+
+        <div class="text-sm text-gray">Avg Actual Time</div> 
+
+        <div class="text-2xl font-bold mt-1" id="kpi-avg-actual">--</div> 
+
+    </div> 
+
+ 
+
+    <div class="card p-4"> 
+
+        <div class="text-sm text-gray">Avg Response Time</div> 
+
+        <div class="text-2xl font-bold mt-1" id="kpi-avg-response">--</div> 
+
+    </div> 
+
+ 
+
+    <div class="card p-4"> 
+
+        <div class="text-sm text-gray">Peak Demand Hour</div> 
+
+        <div class="text-2xl font-bold mt-1" id="kpi-peak-hour">--</div> 
+
+    </div> 
+
+</div> 
+
+ 
+
+<!-- HIGHLIGHTS --> 
+
+<div class="grid grid-cols-4 gap-6 mt-6"> 
+
+    <div class="card p-4"> 
+
+        <div class="text-sm text-gray">Completed Today</div> 
+
+        <div class="text-xl font-bold mt-1" id="highlight-completed-today">--</div> 
+
+    </div> 
+
+    <div class="card p-4"> 
+
+        <div class="text-sm text-gray">Top Incident Type</div> 
+
+        <div class="text-xl font-bold mt-1" id="highlight-top-category">--</div> 
+
+        <div class="text-xs text-gray mt-1" id="highlight-top-category-count"></div> 
+
+    </div> 
+
+    <div class="card p-4"> 
+
+        <div class="text-sm text-gray">Top Hostel</div> 
+
+        <div class="text-xl font-bold mt-1" id="highlight-top-hostel">--</div> 
+
+        <div class="text-xs text-gray mt-1" id="highlight-top-hostel-count"></div> 
+
+    </div> 
+
+    <div class="card p-4"> 
+
+        <div class="text-sm text-gray">Busiest Ambulance</div> 
+
+        <div class="text-xl font-bold mt-1" id="highlight-busiest-ambulance">--</div> 
+
+        <div class="text-xs text-gray mt-1" id="highlight-busiest-ambulance-count"></div> 
+
+    </div> 
+
+</div> 
+
+ 
+
+<!-- MAP + FORECAST --> 
+
+<div class="grid grid-cols-3 gap-6 mt-6"> 
+
+    <div class="col-span-2"> 
+
+        <div class="card"> 
+
+            <div class="card-header flex justify-between items-center"> 
+
+                <h3><i class="fa-solid fa-map-location-dot"></i> Trips, Hotspots & Route Density</h3> 
+
+                <div class="flex gap-2 flex-wrap"> 
+
+                    <button class="btn btn-sm btn-secondary" onclick="loadHotspots()"> 
+
+                        <i class="fa-solid fa-fire"></i> Show AI Hotspots 
+
+                    </button> 
+
+                    <button class="btn btn-sm btn-secondary" onclick="loadTrips()"> 
+
+                        <i class="fa-solid fa-route"></i> Show Trips 
+
+                    </button> 
+
+                    <button class="btn btn-sm btn-secondary" onclick="loadRouteFrequencyLayer()"> 
+
+                        <i class="fa-solid fa-wave-square"></i> Route Frequency 
+
+                    </button> 
+
+                    <button class="btn btn-sm btn-secondary" onclick="clearMapOverlays()"> 
+
+                        <i class="fa-solid fa-eraser"></i> Clear Map 
+
+                    </button> 
+
+                    <button class="btn btn-sm btn-secondary" onclick="loadCampusOverlay()"> 
+
+                        <i class="fa-solid fa-building"></i> Campus Overlay 
+
+                    </button> 
+
+                </div> 
+
+            </div> 
+
+            <div id="analytics-map" style="height: 500px; border-radius: 0 0 12px 12px; z-index: 1;"></div> 
+
+        </div> 
+
+    </div> 
+
+ 
+
+    <div class="col-span-1"> 
+
+        <div class="card h-full"> 
+
+            <div class="card-header"> 
+
+                <h3><i class="fa-solid fa-chart-line"></i> 7-Day Demand Forecast</h3> 
+
+            </div> 
+
+            <div class="p-4" id="forecast-container"> 
+
+                <p class="text-gray text-center py-4"> 
+
+                    <i class="fa-solid fa-spinner fa-spin"></i> Loading forecast... 
+
+                </p> 
+
+            </div> 
+
+        </div> 
+
+    </div> 
+
+</div> 
+
+ 
+
+<!-- PRIMARY CHARTS --> 
+
+<div class="grid grid-cols-2 gap-6 mt-6"> 
+
+    <div class="card p-4"> 
+
+        <h3 class="mb-4">Trips by Day</h3> 
+
+        <div id="chart-trips-by-day" class="chart-box"></div> 
+
+    </div> 
+
+ 
+
+    <div class="card p-4"> 
+
+        <h3 class="mb-4">Trips by Hour</h3> 
+
+        <div id="chart-trips-by-hour" class="chart-box"></div> 
+
+    </div> 
+
+ 
+
+    <div class="card p-4"> 
+
+        <h3 class="mb-4">Incident Category Distribution</h3> 
+
+        <div id="chart-category-distribution" class="chart-box"></div> 
+
+    </div> 
+
+ 
+
+    <div class="card p-4"> 
+
+        <h3 class="mb-4">Hostel Distribution</h3> 
+
+        <div id="chart-hostel-distribution" class="chart-box"></div> 
+
+    </div> 
+
+</div> 
+
+ 
+
+<!-- ADVANCED CHARTS --> 
+
+<div class="grid grid-cols-2 gap-6 mt-6"> 
+
+    <div class="card p-4"> 
+
+        <h3 class="mb-4">Zone Distribution</h3> 
+
+        <div id="chart-zone-distribution" class="chart-box"></div> 
+
+    </div> 
+
+ 
+
+    <div class="card p-4"> 
+
+        <h3 class="mb-4">Busiest Ambulances</h3> 
+
+        <div id="chart-busiest-ambulances" class="chart-box"></div> 
+
+    </div> 
+
+</div> 
+
+ 
+
+<!-- PERFORMANCE --> 
+
+<div class="grid grid-cols-1 gap-6 mt-6"> 
+
+    <div class="card p-4"> 
+
+        <h3 class="mb-4">Operational Performance Summary</h3> 
+
+        <div id="performance-summary" class="performance-grid"></div> 
+
+    </div> 
+
+</div> 
+
+{% endblock %} 
+
+ 
+
+{% block scripts %} 
+
+<script src="{{ url_for('static', filename='js/map_core.js') }}"></script> 
+
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script> 
+
+ 
+
+<style> 
+
+.analytics-kpi-grid { 
+
+    display: grid; 
+
+    grid-template-columns: repeat(6, 1fr); 
+
+    gap: 16px; 
+
+} 
+
+ 
+
+.chart-box { 
+
+    min-height: 260px; 
+
+} 
+
+ 
+
+.chart-empty { 
+
+    color: #64748b; 
+
+    text-align: center; 
+
+    padding: 40px 12px; 
+
+} 
+
+ 
+
+.simple-bar-chart { 
+
+    display: flex; 
+
+    align-items: end; 
+
+    gap: 10px; 
+
+    min-height: 220px; 
+
+    padding: 10px 6px 0; 
+
+    overflow-x: auto; 
+
+} 
+
+ 
+
+.simple-bar-column { 
+
+    min-width: 38px; 
+
+    display: flex; 
+
+    flex-direction: column; 
+
+    align-items: center; 
+
+    gap: 6px; 
+
+} 
+
+ 
+
+.simple-bar { 
+
+    width: 28px; 
+
+    border-radius: 6px 6px 0 0; 
+
+    background: #2563eb; 
+
+    min-height: 4px; 
+
+} 
+
+ 
+
+.simple-bar-label { 
+
+    font-size: 11px; 
+
+    color: #475569; 
+
+    text-align: center; 
+
+    word-break: break-word; 
+
+} 
+
+ 
+
+.simple-bar-value { 
+
+    font-size: 11px; 
+
+    font-weight: 700; 
+
+    color: #0f172a; 
+
+} 
+
+ 
+
+.performance-grid { 
+
+    display: grid; 
+
+    grid-template-columns: repeat(5, 1fr); 
+
+    gap: 14px; 
+
+} 
+
+ 
+
+.performance-card { 
+
+    border: 1px solid #e2e8f0; 
+
+    border-radius: 12px; 
+
+    padding: 14px; 
+
+    background: #fff; 
+
+} 
+
+ 
+
+.performance-label { 
+
+    font-size: 12px; 
+
+    color: #64748b; 
+
+    margin-bottom: 6px; 
+
+} 
+
+ 
+
+.performance-value { 
+
+    font-size: 22px; 
+
+    font-weight: 700; 
+
+    color: #0f172a; 
+
+} 
+
+ 
+
+.forecast-grid { 
+
+    display: grid; 
+
+    grid-template-columns: repeat(7, 1fr); 
+
+    gap: 10px; 
+
+} 
+
+ 
+
+@media (max-width: 1200px) { 
+
+    .analytics-kpi-grid { 
+
+        grid-template-columns: repeat(3, 1fr); 
+
+    } 
+
+    .performance-grid { 
+
+        grid-template-columns: repeat(2, 1fr); 
+
+    } 
+
+} 
+
+ 
+
+@media (max-width: 768px) { 
+
+    .analytics-kpi-grid { 
+
+        grid-template-columns: repeat(2, 1fr); 
+
+    } 
+
+    .performance-grid { 
+
+        grid-template-columns: 1fr; 
+
+    } 
+
+} 
+
+</style> 
+
+{% endblock %} 

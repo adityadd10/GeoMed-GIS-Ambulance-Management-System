@@ -70,6 +70,38 @@ class Config:
     }
 
 
+ # ------------------------------------------------------------------
+
+    # Campus routing overrides
+
+    # Display coordinates can be inside buildings, while routing
+
+    # coordinates are snapped to nearby roads for better navigation.
+
+    # ------------------------------------------------------------------
+
+    CAMPUS_ROUTE_OVERRIDES = {
+
+        # Example:
+
+        # 'Hostel 1 (Queen of the Campus)': [19.135980, 72.914120],
+
+        # 'Main Gate': [19.127200, 72.913400],
+
+    }
+
+    # Optional GeoJSON overlay
+
+    CAMPUS_BUILDINGS_GEOJSON = '/static/data/iitb_buildings.geojson'
+
+    @classmethod
+    def get_route_coords(cls, location_name):
+        return cls.CAMPUS_LOCATIONS.get(location_name) 
+    
+    @classmethod
+    def get_route_coords(cls, location_name):
+        return cls.CAMPUS_ROUTE_OVERRIDES.get(location_name) or cls.CAMPUS_LOCATIONS.get(location_name)   
+
 class DevelopmentConfig(Config):
     DEBUG = True
 
