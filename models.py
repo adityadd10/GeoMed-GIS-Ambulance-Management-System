@@ -182,9 +182,11 @@ class PatientRequest(db.Model):
     patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
     created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     symptoms = db.Column(db.Text)
+    incident_category = db.Column(db.String(100))
+    incident_name = db.Column(db.String(100))
+    criticality_level = db.Column(db.Integer)  
+    criticality_name = db.Column(db.String(50))
     emergency_type = db.Column(db.String(50), default='unknown')
-    ml_emergency_type = db.Column(db.String(50))  # ML-predicted type
-    ml_confidence = db.Column(db.Float)  # ML confidence score
     pickup_location = db.Column(db.String(150))
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
@@ -205,8 +207,10 @@ class PatientRequest(db.Model):
             'patient_name': self.patient.name if self.patient else None,
             'symptoms': self.symptoms,
             'emergency_type': self.emergency_type,
-            'ml_emergency_type': self.ml_emergency_type,
-            'ml_confidence': self.ml_confidence,
+            'incident_category': self.incident_category,
+            'incident_name': self.incident_name,
+            'criticality_level': self.criticality_level,
+            'criticality_name': self.criticality_name,
             'pickup_location': self.pickup_location,
             'latitude': self.latitude,
             'longitude': self.longitude,

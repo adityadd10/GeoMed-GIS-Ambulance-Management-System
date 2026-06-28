@@ -1,0 +1,1402 @@
+[
+  {
+    "id": 1,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Cardiac Arrest",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 2,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Heart Attack",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 3,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Severe Chest Pain",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 4,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Chest Tightness",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 5,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Palpitations",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 6,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Arrhythmia",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 7,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Hypertensive Crisis",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 8,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Hypotension",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 9,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Syncope due to Cardiac Cause",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 10,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Angina",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 11,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Mild Chest Discomfort",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 12,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Respiratory Arrest",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 13,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Not Breathing",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 14,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Severe Asthma Attack",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 15,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Choking",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 16,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Airway Obstruction",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 17,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Anaphylactic Airway Swelling",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 18,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Severe Breathlessness",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 19,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Pneumonia with Distress",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 20,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Hyperventilation",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 21,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Mild Asthma",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 22,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Persistent Cough",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 23,
+    "category": "Neurological Emergencies",
+    "incident_name": "Stroke",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 24,
+    "category": "Neurological Emergencies",
+    "incident_name": "Seizure",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 25,
+    "category": "Neurological Emergencies",
+    "incident_name": "Status Epilepticus",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 26,
+    "category": "Neurological Emergencies",
+    "incident_name": "Unconscious",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 27,
+    "category": "Neurological Emergencies",
+    "incident_name": "Coma",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 28,
+    "category": "Neurological Emergencies",
+    "incident_name": "Head Injury with LOC",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 29,
+    "category": "Neurological Emergencies",
+    "incident_name": "Transient Loss of Consciousness",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 30,
+    "category": "Neurological Emergencies",
+    "incident_name": "Severe Dizziness",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 31,
+    "category": "Neurological Emergencies",
+    "incident_name": "Severe Headache",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 32,
+    "category": "Neurological Emergencies",
+    "incident_name": "Migraine",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 33,
+    "category": "Neurological Emergencies",
+    "incident_name": "Vertigo",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 34,
+    "category": "Neurological Emergencies",
+    "incident_name": "Headache",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 35,
+    "category": "Trauma & Injuries",
+    "incident_name": "Road Traffic Accident",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 36,
+    "category": "Trauma & Injuries",
+    "incident_name": "Fall from Height",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 37,
+    "category": "Trauma & Injuries",
+    "incident_name": "Polytrauma",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 38,
+    "category": "Trauma & Injuries",
+    "incident_name": "Heavy Bleeding",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 39,
+    "category": "Trauma & Injuries",
+    "incident_name": "Open Fracture",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 40,
+    "category": "Trauma & Injuries",
+    "incident_name": "Penetrating Injury",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 41,
+    "category": "Trauma & Injuries",
+    "incident_name": "Spinal Injury",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 42,
+    "category": "Trauma & Injuries",
+    "incident_name": "Crush Injury",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 43,
+    "category": "Trauma & Injuries",
+    "incident_name": "Closed Fracture",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 44,
+    "category": "Trauma & Injuries",
+    "incident_name": "Shoulder Dislocation",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 45,
+    "category": "Trauma & Injuries",
+    "incident_name": "Hip Dislocation",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 46,
+    "category": "Trauma & Injuries",
+    "incident_name": "Deep Laceration",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 47,
+    "category": "Trauma & Injuries",
+    "incident_name": "Major Burn",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 48,
+    "category": "Trauma & Injuries",
+    "incident_name": "Electrical Injury",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 49,
+    "category": "Trauma & Injuries",
+    "incident_name": "Facial Injury",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 50,
+    "category": "Trauma & Injuries",
+    "incident_name": "Knee Injury",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 51,
+    "category": "Trauma & Injuries",
+    "incident_name": "Ankle Sprain",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 52,
+    "category": "Trauma & Injuries",
+    "incident_name": "Muscle Strain",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 53,
+    "category": "Trauma & Injuries",
+    "incident_name": "Finger Fracture",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 54,
+    "category": "Trauma & Injuries",
+    "incident_name": "Minor Cut",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 55,
+    "category": "Trauma & Injuries",
+    "incident_name": "Bruise",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 56,
+    "category": "Trauma & Injuries",
+    "incident_name": "Abrasion",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 57,
+    "category": "Trauma & Injuries",
+    "incident_name": "Splinter Injury",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 58,
+    "category": "Sports Injuries",
+    "incident_name": "Sports Head Injury",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 59,
+    "category": "Sports Injuries",
+    "incident_name": "ACL Tear",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 60,
+    "category": "Sports Injuries",
+    "incident_name": "Meniscus Injury",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 61,
+    "category": "Sports Injuries",
+    "incident_name": "Shoulder Sprain",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 62,
+    "category": "Sports Injuries",
+    "incident_name": "Hamstring Tear",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 63,
+    "category": "Sports Injuries",
+    "incident_name": "Tennis Elbow",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 64,
+    "category": "Sports Injuries",
+    "incident_name": "Muscle Cramp",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 65,
+    "category": "Sports Injuries",
+    "incident_name": "Blister",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 66,
+    "category": "Gastrointestinal",
+    "incident_name": "GI Bleeding",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 67,
+    "category": "Gastrointestinal",
+    "incident_name": "Vomiting Blood",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 68,
+    "category": "Gastrointestinal",
+    "incident_name": "Severe Abdominal Pain",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 69,
+    "category": "Gastrointestinal",
+    "incident_name": "Acute Appendicitis Suspected",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 70,
+    "category": "Gastrointestinal",
+    "incident_name": "Food Poisoning",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 71,
+    "category": "Gastrointestinal",
+    "incident_name": "Persistent Vomiting",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 72,
+    "category": "Gastrointestinal",
+    "incident_name": "Severe Dehydration",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 73,
+    "category": "Gastrointestinal",
+    "incident_name": "Diarrhea",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 74,
+    "category": "Gastrointestinal",
+    "incident_name": "Vomiting",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 75,
+    "category": "Gastrointestinal",
+    "incident_name": "Constipation",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 76,
+    "category": "Gastrointestinal",
+    "incident_name": "Stomach Ache",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 77,
+    "category": "Infectious Diseases",
+    "incident_name": "High Fever",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 78,
+    "category": "Infectious Diseases",
+    "incident_name": "Suspected Meningitis",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 79,
+    "category": "Infectious Diseases",
+    "incident_name": "Severe Malaria",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 80,
+    "category": "Infectious Diseases",
+    "incident_name": "Dengue with Shock",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 81,
+    "category": "Infectious Diseases",
+    "incident_name": "COVID Severe Symptoms",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 82,
+    "category": "Infectious Diseases",
+    "incident_name": "Tuberculosis Symptoms",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 83,
+    "category": "Infectious Diseases",
+    "incident_name": "Viral Fever",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 84,
+    "category": "Infectious Diseases",
+    "incident_name": "Influenza",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 85,
+    "category": "Infectious Diseases",
+    "incident_name": "Sore Throat",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 86,
+    "category": "Infectious Diseases",
+    "incident_name": "Common Cold",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 87,
+    "category": "Allergic Reactions",
+    "incident_name": "Anaphylaxis",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 88,
+    "category": "Allergic Reactions",
+    "incident_name": "Severe Drug Allergy",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 89,
+    "category": "Allergic Reactions",
+    "incident_name": "Bee Sting Allergy",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 90,
+    "category": "Allergic Reactions",
+    "incident_name": "Food Allergy",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 91,
+    "category": "Allergic Reactions",
+    "incident_name": "Skin Rash",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 92,
+    "category": "Allergic Reactions",
+    "incident_name": "Itching",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 93,
+    "category": "Mental Health",
+    "incident_name": "Suicide Attempt",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 94,
+    "category": "Mental Health",
+    "incident_name": "Self Harm",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 95,
+    "category": "Mental Health",
+    "incident_name": "Violent Behaviour",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 96,
+    "category": "Mental Health",
+    "incident_name": "Acute Psychosis",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 97,
+    "category": "Mental Health",
+    "incident_name": "Panic Attack",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 98,
+    "category": "Mental Health",
+    "incident_name": "Severe Anxiety",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 99,
+    "category": "Mental Health",
+    "incident_name": "Depression Crisis",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 100,
+    "category": "Mental Health",
+    "incident_name": "Emotional Breakdown",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 101,
+    "category": "Mental Health",
+    "incident_name": "Counselling Request",
+    "criticality_level": 5,
+    "criticality_name": "Administrative"
+  },
+  {
+    "id": 102,
+    "category": "ENT & Eye",
+    "incident_name": "Eye Chemical Burn",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 103,
+    "category": "ENT & Eye",
+    "incident_name": "Vision Loss",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 104,
+    "category": "ENT & Eye",
+    "incident_name": "Eye Injury",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 105,
+    "category": "ENT & Eye",
+    "incident_name": "Ear Bleeding",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 106,
+    "category": "ENT & Eye",
+    "incident_name": "Heavy Nosebleed",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 107,
+    "category": "ENT & Eye",
+    "incident_name": "Foreign Body in Eye",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 108,
+    "category": "ENT & Eye",
+    "incident_name": "Ear Pain",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 109,
+    "category": "ENT & Eye",
+    "incident_name": "Eye Irritation",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 110,
+    "category": "Skin & Burns",
+    "incident_name": "Extensive Burns",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 111,
+    "category": "Skin & Burns",
+    "incident_name": "Second Degree Burn",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 112,
+    "category": "Skin & Burns",
+    "incident_name": "Minor Burn",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 113,
+    "category": "Skin & Burns",
+    "incident_name": "Skin Infection",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 114,
+    "category": "Skin & Burns",
+    "incident_name": "Cellulitis",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 115,
+    "category": "Skin & Burns",
+    "incident_name": "Pressure Ulcer",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 116,
+    "category": "Endocrine",
+    "incident_name": "Diabetic Ketoacidosis",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 117,
+    "category": "Endocrine",
+    "incident_name": "Hypoglycemic Unconsciousness",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 118,
+    "category": "Endocrine",
+    "incident_name": "Severe Hypoglycemia",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 119,
+    "category": "Endocrine",
+    "incident_name": "Hyperglycemia",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 120,
+    "category": "Endocrine",
+    "incident_name": "Low Sugar Symptoms",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 121,
+    "category": "Animal & Insect",
+    "incident_name": "Snake Bite",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 122,
+    "category": "Animal & Insect",
+    "incident_name": "Dog Bite",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 123,
+    "category": "Animal & Insect",
+    "incident_name": "Monkey Bite",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 124,
+    "category": "Animal & Insect",
+    "incident_name": "Scorpion Sting",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 125,
+    "category": "Animal & Insect",
+    "incident_name": "Bee Sting",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 126,
+    "category": "Animal & Insect",
+    "incident_name": "Insect Bite",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 127,
+    "category": "Poisoning",
+    "incident_name": "Poison Ingestion",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 128,
+    "category": "Poisoning",
+    "incident_name": "Drug Overdose",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 129,
+    "category": "Poisoning",
+    "incident_name": "Alcohol Poisoning",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 130,
+    "category": "Poisoning",
+    "incident_name": "Chemical Exposure",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 131,
+    "category": "Poisoning",
+    "incident_name": "Gas Inhalation",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 132,
+    "category": "Poisoning",
+    "incident_name": "Unknown Poison Exposure",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 133,
+    "category": "Environmental",
+    "incident_name": "Heat Stroke",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 134,
+    "category": "Environmental",
+    "incident_name": "Hypothermia",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 135,
+    "category": "Environmental",
+    "incident_name": "Heat Exhaustion",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 136,
+    "category": "Environmental",
+    "incident_name": "Dehydration",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 137,
+    "category": "Environmental",
+    "incident_name": "Sunburn",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 138,
+    "category": "Environmental",
+    "incident_name": "Lightning Injury",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 139,
+    "category": "Laboratory Accidents",
+    "incident_name": "Acid Spill Burn",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 140,
+    "category": "Laboratory Accidents",
+    "incident_name": "Chemical Splash to Eye",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 141,
+    "category": "Laboratory Accidents",
+    "incident_name": "Chemical Inhalation",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 142,
+    "category": "Laboratory Accidents",
+    "incident_name": "Lab Fire Burn",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 143,
+    "category": "Laboratory Accidents",
+    "incident_name": "Broken Glass Cut",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 144,
+    "category": "Laboratory Accidents",
+    "incident_name": "Gas Leak Exposure",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 145,
+    "category": "Campus Specific",
+    "incident_name": "Hostel Fall",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 146,
+    "category": "Campus Specific",
+    "incident_name": "Hostel Collapse",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 147,
+    "category": "Campus Specific",
+    "incident_name": "Building Fire",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 148,
+    "category": "Campus Specific",
+    "incident_name": "Lift Entrapment",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 149,
+    "category": "Campus Specific",
+    "incident_name": "Classroom Collapse",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 150,
+    "category": "Campus Specific",
+    "incident_name": "Sports Ground Injury",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 151,
+    "category": "Campus Specific",
+    "incident_name": "Bicycle Accident",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 152,
+    "category": "Campus Specific",
+    "incident_name": "Slip and Fall",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 153,
+    "category": "Campus Specific",
+    "incident_name": "Electrical Shock in Hostel",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 154,
+    "category": "Campus Specific",
+    "incident_name": "Swimming Pool Incident",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 155,
+    "category": "Administrative",
+    "incident_name": "Medical Escort",
+    "criticality_level": 5,
+    "criticality_name": "Administrative"
+  },
+  {
+    "id": 156,
+    "category": "Administrative",
+    "incident_name": "Routine Hospital Transfer",
+    "criticality_level": 5,
+    "criticality_name": "Administrative"
+  },
+  {
+    "id": 157,
+    "category": "Administrative",
+    "incident_name": "OPD Referral",
+    "criticality_level": 5,
+    "criticality_name": "Administrative"
+  },
+  {
+    "id": 158,
+    "category": "Administrative",
+    "incident_name": "Medical Certificate Visit",
+    "criticality_level": 5,
+    "criticality_name": "Administrative"
+  },
+  {
+    "id": 159,
+    "category": "Administrative",
+    "incident_name": "Follow-up Transport",
+    "criticality_level": 5,
+    "criticality_name": "Administrative"
+  },
+  {
+    "id": 160,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Other Cardiac Emergencies Incident 1",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 161,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Other Respiratory Emergencies Incident 2",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 162,
+    "category": "Neurological Emergencies",
+    "incident_name": "Other Neurological Emergencies Incident 3",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 163,
+    "category": "Trauma & Injuries",
+    "incident_name": "Other Trauma & Injuries Incident 4",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 164,
+    "category": "Sports Injuries",
+    "incident_name": "Other Sports Injuries Incident 5",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 165,
+    "category": "Gastrointestinal",
+    "incident_name": "Other Gastrointestinal Incident 6",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 166,
+    "category": "Infectious Diseases",
+    "incident_name": "Other Infectious Diseases Incident 7",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 167,
+    "category": "Allergic Reactions",
+    "incident_name": "Other Allergic Reactions Incident 8",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 168,
+    "category": "Mental Health",
+    "incident_name": "Other Mental Health Incident 9",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 169,
+    "category": "ENT & Eye",
+    "incident_name": "Other ENT & Eye Incident 10",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 170,
+    "category": "Skin & Burns",
+    "incident_name": "Other Skin & Burns Incident 11",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 171,
+    "category": "Endocrine",
+    "incident_name": "Other Endocrine Incident 12",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 172,
+    "category": "Animal & Insect",
+    "incident_name": "Other Animal & Insect Incident 13",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 173,
+    "category": "Poisoning",
+    "incident_name": "Other Poisoning Incident 14",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 174,
+    "category": "Environmental",
+    "incident_name": "Other Environmental Incident 15",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 175,
+    "category": "Laboratory Accidents",
+    "incident_name": "Other Laboratory Accidents Incident 16",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 176,
+    "category": "Campus Specific",
+    "incident_name": "Other Campus Specific Incident 17",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 177,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Other Cardiac Emergencies Incident 18",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 178,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Other Respiratory Emergencies Incident 19",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 179,
+    "category": "Neurological Emergencies",
+    "incident_name": "Other Neurological Emergencies Incident 20",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 180,
+    "category": "Trauma & Injuries",
+    "incident_name": "Other Trauma & Injuries Incident 21",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 181,
+    "category": "Sports Injuries",
+    "incident_name": "Other Sports Injuries Incident 22",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 182,
+    "category": "Gastrointestinal",
+    "incident_name": "Other Gastrointestinal Incident 23",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 183,
+    "category": "Infectious Diseases",
+    "incident_name": "Other Infectious Diseases Incident 24",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 184,
+    "category": "Allergic Reactions",
+    "incident_name": "Other Allergic Reactions Incident 25",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 185,
+    "category": "Mental Health",
+    "incident_name": "Other Mental Health Incident 26",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 186,
+    "category": "ENT & Eye",
+    "incident_name": "Other ENT & Eye Incident 27",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 187,
+    "category": "Skin & Burns",
+    "incident_name": "Other Skin & Burns Incident 28",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 188,
+    "category": "Endocrine",
+    "incident_name": "Other Endocrine Incident 29",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 189,
+    "category": "Animal & Insect",
+    "incident_name": "Other Animal & Insect Incident 30",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 190,
+    "category": "Poisoning",
+    "incident_name": "Other Poisoning Incident 31",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 191,
+    "category": "Environmental",
+    "incident_name": "Other Environmental Incident 32",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 192,
+    "category": "Laboratory Accidents",
+    "incident_name": "Other Laboratory Accidents Incident 33",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 193,
+    "category": "Campus Specific",
+    "incident_name": "Other Campus Specific Incident 34",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 194,
+    "category": "Cardiac Emergencies",
+    "incident_name": "Other Cardiac Emergencies Incident 35",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 195,
+    "category": "Respiratory Emergencies",
+    "incident_name": "Other Respiratory Emergencies Incident 36",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 196,
+    "category": "Neurological Emergencies",
+    "incident_name": "Other Neurological Emergencies Incident 37",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  },
+  {
+    "id": 197,
+    "category": "Trauma & Injuries",
+    "incident_name": "Other Trauma & Injuries Incident 38",
+    "criticality_level": 2,
+    "criticality_name": "High"
+  },
+  {
+    "id": 198,
+    "category": "Sports Injuries",
+    "incident_name": "Other Sports Injuries Incident 39",
+    "criticality_level": 3,
+    "criticality_name": "Moderate"
+  },
+  {
+    "id": 199,
+    "category": "Gastrointestinal",
+    "incident_name": "Other Gastrointestinal Incident 40",
+    "criticality_level": 4,
+    "criticality_name": "Minor"
+  },
+  {
+    "id": 200,
+    "category": "Infectious Diseases",
+    "incident_name": "Other Infectious Diseases Incident 41",
+    "criticality_level": 1,
+    "criticality_name": "Critical"
+  }
+]

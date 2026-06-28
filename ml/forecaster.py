@@ -13,8 +13,8 @@ def forecast_demand(days_ahead=7):
     forecast = []
     
     # Simple deterministic but realistic-looking random walk
-    base_demand = 5
-    
+    base_demand = 5 
+
     for i in range(days_ahead):
         target_date = base_date + timedelta(days=i)
         is_weekend = target_date.weekday() >= 5

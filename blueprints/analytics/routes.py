@@ -139,7 +139,7 @@ def index():
     return render_template('analytics.html', page='analytics')
 
 
-@analytics_bp.route('/analytics/overview', methods=['GET'])
+@analytics_bp.route('/api/analytics/overview', methods=['GET'])
 
 @login_required
 
@@ -326,7 +326,7 @@ def analytics_highlights():
     })
 
 
-@analytics_bp.route('/analytics/trips-by-day', methods=['GET'])
+@analytics_bp.route('/api/analytics/trips-by-day', methods=['GET'])
 
 @login_required
 
@@ -357,7 +357,7 @@ def analytics_trips_by_day():
     return jsonify(results)
 
 
-@analytics_bp.route('/analytics/trips-by-hour', methods=['GET'])
+@analytics_bp.route('/api/analytics/trips-by-hour', methods=['GET'])
 
 @login_required
 
@@ -387,7 +387,8 @@ def analytics_trips_by_hour():
 
     return jsonify(results)
 
-@analytics_bp.route('/analytics/category-distribution', methods=['GET'])
+
+@analytics_bp.route('/api/analytics/category-distribution', methods=['GET'])
 
 @login_required
 
@@ -416,7 +417,7 @@ def analytics_category_distribution():
     return jsonify(results)
 
 
-@analytics_bp.route('/analytics/hostel-distribution', methods=['GET'])
+@analytics_bp.route('/api/analytics/hostel-distribution', methods=['GET'])
 
 @login_required
 
@@ -437,7 +438,7 @@ def analytics_hostel_distribution():
     return jsonify(results)
 
 
-@analytics_bp.route('/analytics/zone-distribution', methods=['GET'])
+@analytics_bp.route('/api/analytics/zone-distribution', methods=['GET'])
 
 @login_required
 
@@ -458,7 +459,7 @@ def analytics_zone_distribution():
     return jsonify(results)
 
 
-@analytics_bp.route('/analytics/busiest-ambulances', methods=['GET'])
+@analytics_bp.route('/api/analytics/busiest-ambulances', methods=['GET'])
 
 @login_required
 
@@ -487,7 +488,7 @@ def analytics_busiest_ambulances():
     return jsonify(results)
 
 
-@analytics_bp.route('/analytics/performance', methods=['GET'])
+@analytics_bp.route('/api/analytics/performance', methods=['GET'])
 
 @login_required
 
@@ -564,7 +565,7 @@ def analytics_performance():
     })
 
 
-@analytics_bp.route('/analytics/route-frequency', methods=['GET'])
+@analytics_bp.route('/api/analytics/route-frequency', methods=['GET'])
 
 @login_required
 

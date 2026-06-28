@@ -20,12 +20,12 @@
                 <label>Patient Name *</label>
                 <input type="text" name="patient_name" required>
             </div>
-            
+
             <div class="form-group">
                 <label>Age</label>
                 <input type="number" name="patient_age">
             </div>
-            
+
             <div class="form-group">
                 <label>Gender</label>
                 <select name="patient_gender">
@@ -35,10 +35,15 @@
                     <option value="O">Other</option>
                 </select>
             </div>
-            
+
             <div class="form-group col-span-2">
                 <label>Phone Number</label>
                 <input type="text" name="patient_phone">
+            </div>
+
+            <div class="form-group col-span-2">
+                <label>Roll Number</label>
+                <input type="text" name="roll_number" placeholder="e.g., 25MXXXX">
             </div>
 
             <div class="form-group col-span-2">
@@ -50,14 +55,23 @@
                     {% endfor %}
                 </select>
             </div>
-            
+
             <!-- Hidden inputs for coordinates -->
             <input type="hidden" name="latitude" id="lat-input" value="19.1309507">
             <input type="hidden" name="longitude" id="lon-input" value="72.9146062">
 
+            <div class="form-group col-span-2 incident-search-wrapper">
+                <label>Incident Name</label>
+                <input type="text" name="incident_name" id="incident-input" placeholder="Search for incident..."
+                    autocomplete="off" oninput="handleIncidentSearch()" onfocus="handleIncidentSearch()">
+                <input type="hidden" name="incident_id" id="incident-id">
+                <div id="incident-dropdown" class="incident-dropdown"></div>
+                <div id="incident-details" class="incident-details">Start typing and select a matching incident</div>
+            </div>
+
             <div class="form-group col-span-2">
-                <label>Symptoms / Reason</label>
-                <textarea name="symptoms" rows="3" placeholder="Describe the symptoms..."></textarea>
+                <label>Additional Notes</label>
+                <textarea name="notes" rows="2" placeholder="Any additional information..."></textarea>
             </div>
 
             <div class="form-group col-span-2">
@@ -66,15 +80,155 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
-function updateCoords() {
-    const select = document.getElementById('location-select');
-    const option = select.options[select.selectedIndex];
-    if(option.value) {
-        document.getElementById('lat-input').value = option.dataset.lat;
-        document.getElementById('lon-input').value = option.dataset.lon;
+    const INCIDENTS = {{ incidents | tojson }};
+    function updateCoords() {
+        const select = document.getElementById('location-select');
+        const option = select.options[select.selectedIndex];
+        if (option.value) {
+            document.getElementById('lat-input').value = option.dataset.lat;
+            document.getElementById('lon-input').value = option.dataset.lon;
+        }
     }
-}
+
+    function criticalityColor(level, name) {
+        if (level === 1 || name === 'Critical') return '#dc2626';
+        if (level === 2 || name === 'High') return '#ea580c';
+        if (level === 3 || name === 'Medium') return '#ca8a04';
+        if (level === 4 || name === 'Low') return '#16a34a';
+        return '#6b7280';
+    }
+
+    function handleIncidentSearch() {
+        const input = document.getElementById('incident-input');
+        const dropdown = document.getElementById('incident-dropdown');
+        const details = document.getElementById('incident-details');
+        const query = input.value.trim().toLowerCase();
+        document.getElementById('incident-id').value = '';
+
+        if (!query) {
+            dropdown.innerHTML = '';
+            dropdown.style.display = 'none';
+            document.getElementById('incident-details').innerHTML = 'Start typing and select a matching incident.';
+            return;
+        }
+
+        const matches = INCIDENTS.filter(item => {
+            const name = (item.incident_name || '').toLowerCase();
+            const category = (item.category || '').toLowerCase();
+            return name.includes(query) || category.includes(query);
+        }).slice(0, 8);
+
+        dropdown.innerHTML = '';
+
+        if (!matches.length) {
+            dropdown.style.display = 'block';
+            dropdown.innerHTML = '<div class="incident-option muted" onclick="selectIncident()">No exact match found. Save as Other/Unknown</div>';
+            document.getElementById('incident-details').innerHTML = '<span style="color: #64748b;">No predefined match. This will be saved as <strong> Other/Unknown </strong>.</span>';
+            return;
+        }
+
+        matches.forEach(item => {
+            const color = criticalityColor(item.criticality_level, item.criticality_name);
+            const option = document.createElement('div');
+            option.className = 'incident-option';
+            option.innerHTML = `
+            <div class="incident-name">${item.incident_name}</div>
+            <div class="incident-meta">${item.category}<span style="color:${color};font-weight:700;">.${item.criticality_name} Level ${item.criticality_level}</span></div>`;
+            option.onclick = () => selectIncident(item);
+            dropdown.appendChild(option);
+        });
+        dropdown.style.display = 'block';
+    }
+
+    function selectIncident(item) {
+        document.getElementById("incident-input").value = item.incident_name;
+        document.getElementById("incident-id").value = item.id || "";
+        const color = criticalityColor(
+            item.criticality_level,
+            item.criticality_name
+        );
+
+        document.getElementById("incident-details").innerHTML = `
+            <strong>Category:</strong> ${item.category}
+            &nbsp; | &nbsp;
+            <strong>Criticality:</strong>
+            <span style="color:${color};font-weight:700;">
+                ${item.criticality_name} • Level ${item.criticality_level}
+            </span>
+        `;
+
+        document.getElementById("incident-dropdown").style.display = "none";
+
+    }
+
+    function selectUnknownIncident() {
+        document.getElementById('incident-id').value = '';
+        document.getElementById('incident-dropdown').style.display = 'none';
+    }
+
+    document.addEventListener('click', function (event) {
+        const wrapper = document.querySelector('.incident-search-wrapper');
+        const dropdown = document.getElementById('incident-dropdown');
+        if (wrapper && !wrapper.contains(event.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+
 </script>
+
+<style>
+    .incident-search-wrapper {
+        position: relative;
+    }
+
+    .incident-dropdown {
+        display: none;
+        position: absolute;
+        z-index: 9999;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        width: 100%;
+        max-height: 280px;
+        overflow-y: auto;
+        margin-top: 4px;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+    }
+
+    .incident-option {
+        padding: 12px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .incident-option:hover {
+        background: #f8fafc;
+    }
+
+    .incident-option.muted {
+        color: #64748b;
+    }
+
+    .incident-name {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .incident-meta {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 3px;
+    }
+
+    .incident-details {
+        margin-top: 8px;
+        font-size: 13px;
+        color: #475569;
+    }
+</style>
+
 {% endblock %}

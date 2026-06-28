@@ -114,7 +114,7 @@ def complete_task(task_id):
     
     try:
         start_odo = float(request. form.get('start_odometer', 0) or 0)
-        end_odo = float(request.form.get('end_odom eter', 0) or 0)
+        end_odo = float(request.form.get('end_odometer', 0) or 0)
     except ValueError:
         flash(' Invalid odometer values.', 'danger')
         return redirect(url_for('driver.index'))
@@ -141,7 +141,7 @@ def complete_task(task_id):
 
     response_time_minutes = None
     if task.assigned_time and task.accepted_time:
-        response_time_minutes = round((task.accepted_time - task.assigned_time).total_seconds() / 60, 2),
+        response_time_minutes = round((task.accepted_time - task.assigned_time).total_seconds() / 60, 2)
     actual_duration_minutes = None
     if task.accepted_time and task.completed_time:
         actual_duration_minutes = round((task.completed_time - task.accepted_time).total_seconds() / 60, 2)
@@ -158,7 +158,7 @@ def complete_task(task_id):
         route_geometry=route_geometry if route_geometry else None,
         route_source=route_source,
         incident_category = (
-            req.ml_emergency_type if req and req.ml_emergency_type else 
+            req.incident_category if req and req.incident_category else 
             req.emergency_type if req and req else None
         ),
         campus_zone = None,
