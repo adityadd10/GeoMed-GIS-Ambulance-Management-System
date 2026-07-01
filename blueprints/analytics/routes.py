@@ -6,24 +6,21 @@ Phase 5: Advanced analytics + route frequency intelligence
 """
 
 
-from collections import Counter
+from collections import Counter, defaultdict
 
 from datetime import datetime, date
 
-from flask import jsonify
+from flask import jsonify, render_template
 
 from flask_login import login_required
 
 from extensions import db
 
-from models import Trip, Task, AmbulanceTrip
+from models import Trip, Task, AmbulanceTrip, PatientRequest
 
 from . import analytics_bp
 
 import json
-
-from flask import render_template
-
 
 
 def _parse_legacy_datetime(date_str, time_str):
@@ -59,19 +56,6 @@ def _parse_legacy_datetime(date_str, time_str):
             continue
 
     return None
-
-
-
-def _get_all_legacy_trips():
-
-    return AmbulanceTrip.query.all()
-
-
-
-def _get_all_new_trips():
-
-    return Trip.query.all()
-
 
 
 def _safe_avg(values):
@@ -128,6 +112,12 @@ def _segment_key(p1, p2, precision=4):
 
     return tuple(sorted([a, b]))
 
+def _get_new_trips_pairs():
+    return (
+        db.session.query(Task, Trip)
+        .join(Trip, Trip.task_id == Task.id)
+        .all()
+    )
 
 
 @analytics_bp.route('/analytics')
@@ -139,431 +129,190 @@ def index():
     return render_template('analytics.html', page='analytics')
 
 
-@analytics_bp.route('/api/analytics/overview', methods=['GET'])
+@analytics_bp.route('/api/analytics/summary', methods=['GET'])
 
 @login_required
 
-def analytics_overview():
-
-    legacy_trips = _get_all_legacy_trips()
-
-    new_trips = _get_all_new_trips()
-
-    total_trips = len(legacy_trips) + len(new_trips)
-
-    total_distance = (
-
-        sum(t.distance_km or 0 for t in legacy_trips) +
-
-        sum(t.distance_km or 0 for t in new_trips)
-
-    )
-
-    completed_task_trip_pairs = (
-
-        db.session.query(Task, Trip)
-
-        .join(Trip, Trip.task_id == Task.id)
-
-        .all()
-
-    )
-
-    eta_values = [
-
-        task.estimated_duration_min
-
-        for task, trip in completed_task_trip_pairs
-
-        if task.estimated_duration_min is not None
-
-    ]
-
-    actual_values = [
-
-        trip.duration_minutes
-
-        for trip in new_trips
-
-        if trip.duration_minutes is not None
-
-    ] + [
-
-        trip.duration_minutes
-
-        for trip in legacy_trips
-
-        if trip.duration_minutes is not None
-
-    ]
-
-    response_values = [
-
-        trip.response_time_minutes
-
-        for trip in new_trips
-
-        if trip.response_time_minutes is not None
-
-    ]
-
-    hour_counter = Counter()
-
-    for trip in legacy_trips:
-
-        dt = _parse_legacy_datetime(trip.date, trip.time)
-
-        if dt:
-
-            hour_counter[dt.hour] += 1
-
-    for trip in new_trips:
-
-        if trip.created_at:
-
-            hour_counter[trip.created_at.hour] += 1
-
-    peak_hour = None
-
-    peak_count = 0
-
-    if hour_counter:
-
-        peak_hour, peak_count = hour_counter.most_common(1)[0]
-
-    return jsonify({
-
-        "total_trips": total_trips,
-
-        "total_distance_km": round(total_distance, 2),
-
-        "avg_eta_min": _safe_avg(eta_values),
-
-        "avg_actual_time_min": _safe_avg(actual_values),
-
-        "avg_response_time_min": _safe_avg(response_values),
-
-        "peak_hour": peak_hour,
-
-        "peak_hour_count": peak_count
-
-    })
-
-@analytics_bp.route('/api/analytics/highlights', methods=['GET'])
-
-@login_required
-
-def analytics_highlights():
-
-    legacy_trips = _get_all_legacy_trips()
-
-    new_trips = _get_all_new_trips()
+def analytics_summary():
 
     today = date.today()
+    current_year = today.year
+    current_month = today.month
 
-    completed_today = 0
+    legacy_trips = AmbulanceTrip.query.all()
+
+    new_trips = Trip.query.all()
+
+    task_trip_pairs = _get_new_trips_pairs()
+
+    trips_today = 0
+    trips_this_month = 0
+    hour_counter = Counter()
+
+    location_counter = Counter()
+    for req in PatientRequest.query.all():
+        if req.pickup_location:
+            location_counter[req.pickup_location] += 1
 
     for trip in legacy_trips:
-
         dt = _parse_legacy_datetime(trip.date, trip.time)
-
-        if dt and dt.date() == today:
-
-            completed_today += 1
-
-    for trip in new_trips:
-
-        if trip.created_at and trip.created_at.date() == today:
-
-            completed_today += 1
-
-    category_counter = Counter()
-
-    hostel_counter = Counter()
-
-    ambulance_counter = Counter()
-
-    for trip in legacy_trips:
-
-        category_counter[trip.purpose or "Unknown"] += 1
-
-    task_trip_pairs = (
-
-        db.session.query(Task, Trip)
-
-        .join(Trip, Trip.task_id == Task.id)
-
-        .all()
-
-    )
+        if dt:
+            if dt.date() == today:
+                trips_today += 1
+            if dt.year == current_year and dt.month == current_month:
+                trips_this_month += 1
+            hour_counter[dt.hour] += 1
+            if trip.pickup_location: location_counter[trip.pickup_location] += 1
 
     for task, trip in task_trip_pairs:
+        dt = trip.created_at
+        if trip.created_at:
+            if dt:
+                if dt.date() == today:
+                    trips_today += 1
+                if dt.year == current_year and dt.month == current_month:
+                    trips_this_month += 1
+                hour_counter[dt.hour] += 1
+            req = task.request if task else None
+            if req and req.pickup_location:
+                location_counter[req.pickup_location] += 1
+    eta_values = [
+        task.estimated_duration_min
+        for task, trip in task_trip_pairs
+        if task.estimated_duration_min is not None
+    ]
+    actual_values = [
+        trip.duration_minutes
+        for task, trip in task_trip_pairs
+        if trip.duration_minutes is not None
+    ]
+    peak_hour = None
+    peak_hour_count = 0
 
-        category_counter[trip.incident_category or task.request.emergency_type if task.request else "Unknown"] += 1
-
-        hostel_counter[trip.hostel or "Unknown"] += 1
-
-        if task.ambulance:
-
-            ambulance_counter[task.ambulance.vehicle_number] += 1
-
-    top_category = category_counter.most_common(1)[0] if category_counter else ("Unknown", 0)
-
-    top_hostel = hostel_counter.most_common(1)[0] if hostel_counter else ("Unknown", 0)
-
-    busiest_ambulance = ambulance_counter.most_common(1)[0] if ambulance_counter else ("Unknown", 0)
+    if hour_counter:
+        peak_hour, peak_hour_count = hour_counter.most_common(1)[0]
+    
+    top_location = [
+        {
+            "location": location,
+            "count": count
+        }
+        for location, count in location_counter.most_common(3)
+    ]
 
     return jsonify({
-
-        "completed_today": completed_today,
-
-        "top_category": {"name": top_category[0], "count": top_category[1]},
-
-        "top_hostel": {"name": top_hostel[0], "count": top_hostel[1]},
-
-        "busiest_ambulance": {"name": busiest_ambulance[0], "count": busiest_ambulance[1]}
-
+        "trips_today":trips_today,
+        "trips_this_month":trips_this_month,
+        "avg_eta_min":_safe_avg(eta_values),
+        "avg_actual_time_min":_safe_avg(actual_values),
+        "peak_hour":peak_hour,
+        "peak_hour_count":peak_hour_count,
+        "top_location":top_location,
     })
 
-
-@analytics_bp.route('/api/analytics/trips-by-day', methods=['GET'])
-
+@analytics_bp.route('/api/analytics/top-incidents',methods=['GET'])
 @login_required
-
-def analytics_trips_by_day():
-
-    legacy_trips = _get_all_legacy_trips()
-
-    new_trips = _get_all_new_trips()
-
+def analytics_top_incidents():
+    task_trip_pairs = _get_new_trips_pairs()
     counter = Counter()
+    meta = {}
+    for task, trip in task_trip_pairs:
+        req = task.request if task else None
+        if req and req.incident_name: 
+            incident_name = req.incident_name
+            criticality_name = req.criticality_name or "Unknown"
+            criticality_level = req.criticality_level
+        else:
+            incident_name = trip.incident_category or "Unknown"
+            criticality_name = None
+            criticality_level = None
+        counter[incident_name] += 1
+        if incident_name not in meta:
+            meta[incident_name] = {
+                "name": incident_name,
+                "criticality_name": criticality_name,
+                "criticality_level": criticality_level
+            }   
 
-    for trip in legacy_trips:
-
-        dt = _parse_legacy_datetime(trip.date, trip.time)
-
-        if dt:
-
-            counter[dt.strftime("%Y-%m-%d")] += 1
-
-    for trip in new_trips:
-
-        if trip.created_at:
-
-            counter[trip.created_at.strftime("%Y-%m-%d")] += 1
-
-    results = [{"date": day, "count": counter[day]} for day in sorted(counter.keys())]
+    results = []
+    for incident_name, count in counter.most_common():
+        item = meta.get(incident_name, {})
+        results.append({
+            "incident_name": incident_name,
+            "count": count,
+            "criticality_name": item.get("criticality_name"),
+            "criticality_level": item.get("criticality_level")
+        })
 
     return jsonify(results)
-
-
+        
 @analytics_bp.route('/api/analytics/trips-by-hour', methods=['GET'])
 
 @login_required
 
 def analytics_trips_by_hour():
 
-    legacy_trips = _get_all_legacy_trips()
-
-    new_trips = _get_all_new_trips()
-
     counter = Counter({h: 0 for h in range(24)})
-
+    legacy_trips = AmbulanceTrip.query.all()
+    new_trips = Trip.query.all()
+    
     for trip in legacy_trips:
-
         dt = _parse_legacy_datetime(trip.date, trip.time)
-
         if dt:
-
             counter[dt.hour] += 1
 
     for trip in new_trips:
-
         if trip.created_at:
-
             counter[trip.created_at.hour] += 1
 
     results = [{"hour": hour, "count": counter[hour]} for hour in range(24)]
 
     return jsonify(results)
 
-
-@analytics_bp.route('/api/analytics/category-distribution', methods=['GET'])
-
+@analytics_bp.route('/api/analytics/trips-by-day-current-month', methods=['GET'])
 @login_required
+def analytics_trips_by_day_current_month():
 
-def analytics_category_distribution():
-
-    legacy_trips = _get_all_legacy_trips()
-
-    new_trips = _get_all_new_trips()
-
+    today = date.today()
+    current_year = today.year
+    current_month = today.month
+    legacy_trips = AmbulanceTrip.query.all()
+    new_trips = Trip.query.all()
     counter = Counter()
 
     for trip in legacy_trips:
-
-        category = trip.purpose or "Unknown"
-
-        counter[category] += 1
-
-    for trip in new_trips:
-
-        category = trip.incident_category or "Unknown"
-
-        counter[category] += 1
-
-    results = [{"category": key, "count": value} for key, value in counter.most_common()]
-
-    return jsonify(results)
-
-
-@analytics_bp.route('/api/analytics/hostel-distribution', methods=['GET'])
-
-@login_required
-
-def analytics_hostel_distribution():
-
-    new_trips = _get_all_new_trips()
-
-    counter = Counter()
+        dt = _parse_legacy_datetime(trip.date, trip.time)
+        if dt and dt.year == current_year and dt.month == current_month:
+            counter[dt.strftime("%Y-%m-%d")] += 1
 
     for trip in new_trips:
+        dt = trip.created_at
+        if dt and dt.year == current_year and dt.month == current_month:
+            counter[dt.strftime("%Y-%m-%d")] += 1
 
-        hostel = trip.hostel or "Unknown"
-
-        counter[hostel] += 1
-
-    results = [{"hostel": key, "count": value} for key, value in counter.most_common()]
-
+    results = [{"date": day, "count": counter[day]} for day in sorted(counter.keys())]
     return jsonify(results)
 
-
-@analytics_bp.route('/api/analytics/zone-distribution', methods=['GET'])
-
+@analytics_bp.route('/api/analytics/top-locations', methods = ['GET'])
 @login_required
-
-def analytics_zone_distribution():
-
-    new_trips = _get_all_new_trips()
-
+def analytics_top_locations():
     counter = Counter()
-
-    for trip in new_trips:
-
-        zone = trip.campus_zone or "Unknown"
-
-        counter[zone] += 1
-
-    results = [{"zone": key, "count": value} for key, value in counter.most_common()]
-
-    return jsonify(results)
-
-
-@analytics_bp.route('/api/analytics/busiest-ambulances', methods=['GET'])
-
-@login_required
-
-def analytics_busiest_ambulances():
-
-    task_trip_pairs = (
-
-        db.session.query(Task, Trip)
-
-        .join(Trip, Trip.task_id == Task.id)
-
-        .all()
-
-    )
-
-    counter = Counter()
-
+    legacy_trips = AmbulanceTrip.query.all()
+    task_trip_pairs = _get_new_trips_pairs()
+    for trip in legacy_trips:
+        if trip.pickup_location:
+            counter[trip.pickup_location] += 1
     for task, trip in task_trip_pairs:
-
-        if task.ambulance:
-
-            counter[task.ambulance.vehicle_number] += 1
-
-    results = [{"ambulance": key, "count": value} for key, value in counter.most_common()]
-
-    return jsonify(results)
-
-
-@analytics_bp.route('/api/analytics/performance', methods=['GET'])
-
-@login_required
-
-def analytics_performance():
-
-    task_trip_pairs = (
-
-        db.session.query(Task, Trip)
-
-        .join(Trip, Trip.task_id == Task.id)
-
-        .all()
-
-    )
-
-    eta_values = []
-
-    actual_values = []
-
-    response_values = []
-
-    eta_gap_values = []
-
-    on_time_count = 0
-
-    for task, trip in task_trip_pairs:
-
-        eta = task.estimated_duration_min
-
-        actual = trip.duration_minutes
-
-        response = trip.response_time_minutes
-
-        if eta is not None:
-
-            eta_values.append(eta)
-
-        if actual is not None:
-
-            actual_values.append(actual)
-
-        if response is not None:
-
-            response_values.append(response)
-
-        if eta is not None and actual is not None:
-
-            gap = actual - eta
-
-            eta_gap_values.append(gap)
-
-            if actual <= eta:
-
-                on_time_count += 1
-
-    completed_count = len(task_trip_pairs)
-
-    on_time_rate = round((on_time_count / completed_count) * 100, 2) if completed_count else 0
-
-    return jsonify({
-
-        "completed_trip_count": completed_count,
-
-        "avg_eta_min": _safe_avg(eta_values),
-
-        "avg_actual_time_min": _safe_avg(actual_values),
-
-        "avg_response_time_min": _safe_avg(response_values),
-
-        "avg_eta_gap_min": _safe_avg(eta_gap_values),
-
-        "on_time_rate_percent": on_time_rate
-
-    })
-
+        req = task.request if task else None
+        if req and req.pickup_location:
+            counter[req.pickup_location] += 1
+    return jsonify([
+        {
+            "location": location,
+            "count": count
+        }
+        for location, count in counter.most_common(8)
+    ])
 
 @analytics_bp.route('/api/analytics/route-frequency', methods=['GET'])
 
@@ -571,23 +320,17 @@ def analytics_performance():
 
 def analytics_route_frequency():
 
-    """
+    legacy_trips = AmbulanceTrip.query.all()
 
-    Builds a simple route frequency map from all trip geometries.
-
-    Returns the most common repeated segments.
-
-    """
-
-    legacy_trips = _get_all_legacy_trips()
-
-    new_trips = _get_all_new_trips()
+    new_trips = Trip.query.all()
 
     segment_counter = Counter()
 
     segment_coords = {}
 
     all_geometries = []
+
+    # Collect legacy routes
 
     for trip in legacy_trips:
 
@@ -597,6 +340,8 @@ def analytics_route_frequency():
 
             all_geometries.append(geom)
 
+    # Collect new routes
+
     for trip in new_trips:
 
         geom = _safe_parse_geometry(trip.route_geometry)
@@ -605,9 +350,9 @@ def analytics_route_frequency():
 
             all_geometries.append(geom)
 
-    for geom in all_geometries:
+    # Build segment frequency
 
-        # Sample every segment; if route is huge, lightly downsample
+    for geom in all_geometries:
 
         step = 1
 
@@ -633,7 +378,7 @@ def analytics_route_frequency():
 
                 continue
 
-            key = _segment_key(p1, p2, precision=4)
+            key = _segment_key(p1, p2)
 
             segment_counter[key] += 1
 
@@ -649,16 +394,102 @@ def analytics_route_frequency():
 
     results = []
 
-    for key, count in segment_counter.most_common(40):
+    for key, count in segment_counter.most_common(50):
+
+        normalized = round(count / max_count, 3)
+
+        if normalized >= 0.7:
+
+            risk = "High"
+
+            color = "red"
+
+        elif normalized >= 0.4:
+
+            risk = "Medium"
+
+            color = "orange"
+
+        else:
+
+            risk = "Low"
+
+            color = "green"
 
         results.append({
 
-            "coordinates": segment_coords[key],
-
             "frequency": count,
 
-            "normalized_frequency": round(count / max_count, 3)
+            "normalized_frequency": normalized,
+
+            "risk": risk,
+
+            "color": color,
+
+            "coordinates": segment_coords[key]
 
         })
 
+    return jsonify(results)
+
+@analytics_bp.route('/api/analytics/emergency-zones', methods=['GET'])
+@login_required
+def analytics_emergency_zones():
+    zone_counter = Counter()
+    location_meta = {}
+    legacy_trips = AmbulanceTrip.query.all()
+    task_trip_pairs = _get_new_trips_pairs()
+
+    for trip in legacy_trips:
+        if trip.pickup_location:
+            zone_counter[trip.pickup_location] += 1
+            location_meta[trip.pickup_location] = {
+                'lat': trip.pickup_lat,
+                'lon': trip.pickup_lon
+            }
+            
+    for task, trip in task_trip_pairs:
+        req = task.request if task else None
+        if req and req.pickup_location:
+            zone_counter[req.pickup_location] += 1
+            location_meta[req.pickup_location] = {
+                'lat': req.latitude,
+                'lon': req.longitude
+            }
+           
+    if not zone_counter:
+        return jsonify([])
+    
+    max_count = max(zone_counter.values())
+    results = []
+    
+    for location, count in zone_counter.most_common():
+        meta = location_meta.get(location, {})
+        lat = meta.get("lat")
+        lon = meta.get('lon')
+
+        if lat is None or lon is None:
+            continue
+        normalized = round(count/max_count,3)
+        if normalized >=0.7:
+            risk = "High Demand"
+            color = "red"
+            radius = 170
+        elif normalized >= 0.4:
+            risk = "Medium Demand"
+            color = "orange"
+            radius = 125
+        else:
+            risk = "Low Demand"
+            color = "green"
+            radius = 85
+        results.append({
+            "location": location,
+            "count": count,
+            "risk": risk,
+            "color": color,
+            "radius": radius,
+            "lat": lat,
+            "lon": lon
+        })
     return jsonify(results)

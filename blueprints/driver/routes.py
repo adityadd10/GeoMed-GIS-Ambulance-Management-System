@@ -158,6 +158,7 @@ def complete_task(task_id):
         route_geometry=route_geometry if route_geometry else None,
         route_source=route_source,
         incident_category = (
+            req.incident_name if req and req.incident_name else
             req.incident_category if req and req.incident_category else 
             req.emergency_type if req and req else None
         ),

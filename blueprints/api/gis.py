@@ -119,12 +119,10 @@ def get_campus_locations():
     and routing coordinates.
 
     """
-
+    locations = config.Config.get_campus_locations_from_geojson()
     points = []
 
-    for name, display_coords in config.Config.CAMPUS_LOCATIONS.items():
-
-        route_coords = config.Config.get_route_coords(name)
+    for name, coords in locations.items():
 
         points.append({
 
@@ -160,4 +158,14 @@ def get_buildings_overlay():
 
         'geojson_url': config.Config.CAMPUS_BUILDINGS_GEOJSON
 
+    })
+
+@api_bp.route('/gis/roads-overlay', methods = ['GET'])
+@login_required
+def get_roads_overlay():
+    """
+    Returns the configured campus roads GeoJSON path.
+    """
+    return jsonify({
+        'geojson_url': config.Config.CAMPUS_ROADS_GEOJSON
     })

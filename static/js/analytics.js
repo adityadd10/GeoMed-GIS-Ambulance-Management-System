@@ -1,858 +1,383 @@
 
-let analyticsMapCore = null; 
+let analyticsMapCore = null;
 
-let analyticsTripLayers = []; 
+let analyticsTripLayers = [];
 
-let analyticsFrequencyLayers = []; 
+let analyticsFrequencyLayers = [];
 
-let analyticsHotspotLayers = []; 
+let analyticsZoneLayers = [];
 
- 
+
 
 /* ----------------------------- 
 
    Utility helpers 
 
------------------------------- */ 
+------------------------------ */
+
 
- 
 
-async function fetchJSON(url) { 
+async function fetchJSON(url) {
+    const response = await fetch(url);
+    return response.json();
+}
 
-    const response = await fetch(url); 
 
-    return response.json(); 
+function formatMinutes(value) {
+    if (value === null || value === undefined || isNaN(value)) return '--';
+    return `${Number(value).toFixed(1)} min`;
+}
 
-} 
 
- 
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+}
 
-function formatMinutes(value) { 
+function criticalityClass(name) {
+    const value = (name || 'unknown').toLowerCase();
+    if (value === 'critical') return 'critical';
+    if (value === 'high') return 'high';
+    if (value === 'moderate') return 'moderate';
+    if (value === 'low') return 'low';
+    return 'unknown';
+}
 
-    if (value === null || value === undefined || isNaN(value)) return '--'; 
+function renderTopIncidentsList(containerId, incidents, limit = 5) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-    return `${Number(value).toFixed(1)} min`; 
+    if (!incidents || !incidents.length) {
+        container.innerHTML = `<div class="chart-empty">No incidents</div>`;
+        return;
+    }
 
-} 
+    container.innerHTML = incidents.slice(0, limit).map((item, index) => {
+        const criticality = item.criticality_name || 'Unknown';
+        const cls = criticalityClass(criticality);
+        return `
+        <div class="compact-list-item">
+            <strong>${index + 1}.${item.incident_name}</strong>
+            <span class="criticality-badge ${cls}">
+            ${criticality}${item.criticality_level ? 'L' + item.criticality_level :
+                ''
+            }   
+            </span>
+            <div class = "text-xs text-gray">${item.count} case(s)</div>
+        </div>
+        `;
+    }).join('');
 
- 
+}
 
-function setText(id, value) { 
+function renderTopLocationsList(containerId, locations, limit = 3) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-    const el = document.getElementById(id); 
+    if (!locations || !locations.length) {
+        container.innerHTML = `<div class="chart-empty">No locations</div>`;
+        return;
+    }
 
-    if (el) el.textContent = value; 
+    container.innerHTML = locations.slice(0, limit).map((item, index) => {
+        return `
+        <div class="compact-list-item">
+            <strong>${index + 1}.${item.location}</strong>
+            <div class = "text-xs text-gray">${item.count} visits</div>
+        </div>
+        `;
+    }).join('');
+}
 
-} 
+function renderBarChart(containerId, data, labelKey, valueKey, color = '#2563eb', limit = null) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
- 
+    container.innerHTML = '';
 
-function renderBarChart(containerId, data, labelKey, valueKey, color = '#2563eb', limit = null) { 
+    if (!data || !data.length) {
+        container.innerHTML = `<div class="chart-empty">No data available</div>`;
+        return;
+    }
 
-    const container = document.getElementById(containerId); 
 
-    if (!container) return; 
 
- 
+    let rows = [...data];
+    if (limit) rows = rows.slice(0, limit);
 
-    container.innerHTML = ''; 
+    const maxValue = Math.max(...rows.map(r => Number(r[valueKey] || 0)), 1);
+    const chart = document.createElement('div');
+    chart.className = 'simple-bar-chart';
 
- 
 
-    if (!data || !data.length) { 
 
-        container.innerHTML = `<div class="chart-empty">No data available</div>`; 
+    rows.forEach(row => {
+        const value = Number(row[valueKey] || 0);
+        const height = Math.max(8, (value / maxValue) * 180);
 
-        return; 
+        const col = document.createElement('div');
+        col.className = 'simple-bar-column';
 
-    } 
+        const valueDiv = document.createElement('div');
+        valueDiv.className = 'simple-bar-value';
+        valueDiv.textContent = value;
 
- 
+        const bar = document.createElement('div');
+        bar.className = 'simple-bar';
+        bar.style.height = `${height}px`;
+        bar.style.background = color;
 
-    let rows = [...data]; 
+        const label = document.createElement('div');
+        label.className = 'simple-bar-label';
+        label.textContent = row[labelKey];
 
-    if (limit) rows = rows.slice(0, limit); 
+        col.appendChild(valueDiv);
+        col.appendChild(bar);
+        col.appendChild(label);
 
- 
+        chart.appendChild(col);
+    });
 
-    const maxValue = Math.max(...rows.map(r => Number(r[valueKey] || 0)), 1); 
 
-    const chart = document.createElement('div'); 
 
-    chart.className = 'simple-bar-chart'; 
+    container.appendChild(chart);
 
- 
+}
 
-    rows.forEach(row => { 
 
-        const value = Number(row[valueKey] || 0); 
-
-        const height = Math.max(8, (value / maxValue) * 180); 
-
- 
-
-        const col = document.createElement('div'); 
-
-        col.className = 'simple-bar-column'; 
-
- 
-
-        const valueDiv = document.createElement('div'); 
-
-        valueDiv.className = 'simple-bar-value'; 
-
-        valueDiv.textContent = value; 
-
- 
-
-        const bar = document.createElement('div'); 
-
-        bar.className = 'simple-bar'; 
-
-        bar.style.height = `${height}px`; 
-
-        bar.style.background = color; 
-
- 
-
-        const label = document.createElement('div'); 
-
-        label.className = 'simple-bar-label'; 
-
-        label.textContent = row[labelKey]; 
-
- 
-
-        col.appendChild(valueDiv); 
-
-        col.appendChild(bar); 
-
-        col.appendChild(label); 
-
- 
-
-        chart.appendChild(col); 
-
-    }); 
-
- 
-
-    container.appendChild(chart); 
-
-} 
-
- 
 
 /* ----------------------------- 
 
    KPI Loaders 
 
------------------------------- */ 
+------------------------------ */
 
- 
+async function loadSummaryKPIs() {
 
-async function loadOverviewKPIs() { 
+    try {
 
-    try { 
+        const data = await fetchJSON('/api/analytics/summary');
 
-        const data = await fetchJSON('/api/analytics/overview'); 
 
- 
 
-        setText('kpi-total-trips', data.total_trips ?? 0); 
+        setText('kpi-trips-today', data.trips_today ?? 0);
 
-        setText('kpi-total-distance', `${(data.total_distance_km ?? 0).toFixed(2)} km`); 
+        setText('kpi-trips-month', data.trips_this_month ?? 0);
 
-        setText('kpi-avg-eta', formatMinutes(data.avg_eta_min)); 
+        setText('kpi-avg-eta', formatMinutes(data.avg_eta_min));
 
-        setText('kpi-avg-actual', formatMinutes(data.avg_actual_time_min)); 
+        setText('kpi-avg-actual', formatMinutes(data.avg_actual_time_min));
 
-        setText('kpi-avg-response', formatMinutes(data.avg_response_time_min)); 
 
- 
+        if (data.peak_hour !== null && data.peak_hour !== undefined) {
 
-        if (data.peak_hour !== null && data.peak_hour !== undefined) { 
+            setText('kpi-peak-hour', `${String(data.peak_hour).padStart(2, '0')}:00`);
+            setText('kpi-peak-hour-count', `${data.peak_hour_count ?? 0}trip(s)`);
 
-            setText('kpi-peak-hour', `${String(data.peak_hour).padStart(2, '0')}:00`); 
+        } else {
 
-        } else { 
+            setText('kpi-peak-hour', '--');
+            setText('kpi-peak-hour-count', '--');
 
-            setText('kpi-peak-hour', '--'); 
+        }
 
-        } 
+        renderTopLocationsList('kpi-top-locations', data.top_locations || [], 3);
 
-    } catch (err) { 
+    } catch (err) {
 
-        console.error('Failed to load overview KPIs:', err); 
+        console.error('Failed to load overview KPIs:', err);
 
-    } 
+    }
 
-} 
 
- 
 
-async function loadHighlights() { 
+}
 
-    try { 
+async function loadTopIncidents() {
+    const data = await fetchJSON('/api/analytics/top-incidents');
+    renderTopIncidentsList('kpi-top-incidents', data, 5);
+    renderBarChart('chart-top-incidents', data, 'incident_name', 'count', '#f97316', 10)
+}
 
-        const data = await fetchJSON('/api/analytics/highlights'); 
+async function loadTripsByHourChart() {
+    const data = await fetchJSON('/api/analytics/trips-by-hour');
+    const formatted = data.map(item => ({
+        label: `${String(item.hour).padStart(2, '0')}`,
+        count: item.count
+    }))
+    renderBarChart('chart-trips-by-hour', formatted, 'label', 'count', '#0ea5e9', 24);
+}
 
- 
+async function loadTripsByDayCurrentMonthChart() {
+    const data = await fetchJSON('/api/analytics/trips-by-day-current-month');
+    renderBarChart('chart-trips-by-day-month', data, 'date', 'count', '#2563eb', 31);
+}
 
-        setText('highlight-completed-today', data.completed_today ?? 0); 
+function cleanTripRoutes() {
+    analyticsTripLayers.forEach(layer => {
+        try {
+            analyticsMapCore.map.removeLayer(layer);
+        }
+        catch (err) { }
+    });
+    analyticsTripLayers = [];
+}
 
- 
+function cleanFrequencyRoutes() {
+    analyticsFrequencyLayers.forEach(layer => {
+        try {
+            analyticsMapCore.map.removeLayer(layer);
+        }
+        catch (err) { }
+    });
+    analyticsFrequencyLayers = [];
+}
 
-        setText('highlight-top-category', data.top_category?.name ?? '--'); 
+function cleanZoneLayers() {
+    analyticsZoneLayers.forEach(layer => {
+        try {
+            analyticsMapCore.map.removeLayer(layer);
+        }
+        catch (err) { }
+    });
+    analyticsZoneLayers = [];
+}
 
-        setText('highlight-top-category-count', `${data.top_category?.count ?? 0} cases`); 
-
- 
-
-        setText('highlight-top-hostel', data.top_hostel?.name ?? '--'); 
-
-        setText('highlight-top-hostel-count', `${data.top_hostel?.count ?? 0} incidents`); 
-
- 
-
-        setText('highlight-busiest-ambulance', data.busiest_ambulance?.name ?? '--'); 
-
-        setText('highlight-busiest-ambulance-count', `${data.busiest_ambulance?.count ?? 0} trips`); 
-
-    } catch (err) { 
-
-        console.error('Failed to load highlights:', err); 
-
-    } 
-
-} 
-
- 
-
-async function loadTripsByDayChart() { 
-
-    try { 
-
-        const data = await fetchJSON('/api/analytics/trips-by-day'); 
-
-        renderBarChart('chart-trips-by-day', data, 'date', 'count', '#2563eb', 14); 
-
-    } catch (err) { 
-
-        console.error('Failed to load trips-by-day:', err); 
-
-    } 
-
-} 
-
- 
-
-async function loadTripsByHourChart() { 
-
-    try { 
-
-        const data = await fetchJSON('/api/analytics/trips-by-hour'); 
-
-        const chartData = data.map(d => ({ 
-
-            hour_label: `${String(d.hour).padStart(2, '0')}`, 
-
-            count: d.count 
-
-        })); 
-
-        renderBarChart('chart-trips-by-hour', chartData, 'hour_label', 'count', '#0ea5e9', 24); 
-
-    } catch (err) { 
-
-        console.error('Failed to load trips-by-hour:', err); 
-
-    } 
-
-} 
-
- 
-
-async function loadCategoryDistributionChart() { 
-
-    try { 
-
-        const data = await fetchJSON('/api/analytics/category-distribution'); 
-
-        renderBarChart('chart-category-distribution', data, 'category', 'count', '#f97316', 10); 
-
-    } catch (err) { 
-
-        console.error('Failed to load category distribution:', err); 
-
-    } 
-
-} 
-
- 
-
-async function loadHostelDistributionChart() { 
-
-    try { 
-
-        const data = await fetchJSON('/api/analytics/hostel-distribution'); 
-
-        renderBarChart('chart-hostel-distribution', data, 'hostel', 'count', '#10b981', 10); 
-
-    } catch (err) { 
-
-        console.error('Failed to load hostel distribution:', err); 
-
-    } 
-
-} 
-
- 
-
-async function loadZoneDistributionChart() { 
-
-    try { 
-
-        const data = await fetchJSON('/api/analytics/zone-distribution'); 
-
-        renderBarChart('chart-zone-distribution', data, 'zone', 'count', '#8b5cf6', 10); 
-
-    } catch (err) { 
-
-        console.error('Failed to load zone distribution:', err); 
-
-    } 
-
-} 
-
- 
-
-async function loadBusiestAmbulancesChart() { 
-
-    try { 
-
-        const data = await fetchJSON('/api/analytics/busiest-ambulances'); 
-
-        renderBarChart('chart-busiest-ambulances', data, 'ambulance', 'count', '#ef4444', 10); 
-
-    } catch (err) { 
-
-        console.error('Failed to load busiest ambulances:', err); 
-
-    } 
-
-} 
-
- 
-
-async function loadPerformanceSummary() { 
-
-    try { 
-
-        const data = await fetchJSON('/api/analytics/performance'); 
-
-        const container = document.getElementById('performance-summary'); 
-
- 
-
-        if (!container) return; 
-
- 
-
-        container.innerHTML = ` 
-
-            <div class="performance-card"> 
-
-                <div class="performance-label">Completed Trips</div> 
-
-                <div class="performance-value">${data.completed_trip_count ?? 0}</div> 
-
-            </div> 
-
-            <div class="performance-card"> 
-
-                <div class="performance-label">Avg ETA</div> 
-
-                <div class="performance-value">${formatMinutes(data.avg_eta_min)}</div> 
-
-            </div> 
-
-            <div class="performance-card"> 
-
-                <div class="performance-label">Avg Actual Time</div> 
-
-                <div class="performance-value">${formatMinutes(data.avg_actual_time_min)}</div> 
-
-            </div> 
-
-            <div class="performance-card"> 
-
-                <div class="performance-label">Avg ETA Gap</div> 
-
-                <div class="performance-value">${formatMinutes(data.avg_eta_gap_min)}</div> 
-
-            </div> 
-
-            <div class="performance-card"> 
-
-                <div class="performance-label">On-Time Rate</div> 
-
-                <div class="performance-value">${(data.on_time_rate_percent ?? 0).toFixed(1)}%</div> 
-
-            </div> 
-
-        `; 
-
-    } catch (err) { 
-
-        console.error('Failed to load performance summary:', err); 
-
-    } 
-
-} 
-
- 
-
-/* ----------------------------- 
-
-   Forecast 
-
------------------------------- */ 
-
- 
-
-async function loadForecast() { 
-
-    try { 
-
-        const data = await fetchJSON('/api/ml/forecast'); 
-
-        const container = document.getElementById('forecast-container'); 
-
- 
-
-        if (!container) return; 
-
- 
-
-        if (data.error) { 
-
-            container.innerHTML = `<div class="chart-empty">${data.error}</div>`; 
-
-            return; 
-
-        } 
-
- 
-
-        let html = '<div class="forecast-grid">'; 
-
-        data.forEach(d => { 
-
-            const dateObj = new Date(d.date); 
-
-            const day = dateObj.toLocaleDateString('en-US', { weekday: 'short' }); 
-
-            html += ` 
-
-                <div class="text-center p-3 border rounded ${d.is_weekend ? 'bg-gray-50' : ''}"> 
-
-                    <div class="text-sm text-gray font-bold">${day}</div> 
-
-                    <div class="text-xl font-bold text-blue-600 my-2">${d.expected_requests}</div> 
-
-                    <div class="text-xs text-gray">Calls</div> 
-
-                </div> 
-
-            `; 
-
-        }); 
-
-        html += '</div>'; 
-
-        container.innerHTML = html; 
-
-    } catch (err) { 
-
-        console.error('Failed to load forecast:', err); 
-
-    } 
-
-} 
-
- 
-
-/* ----------------------------- 
-
-   Map actions 
-
------------------------------- */ 
-
- 
-
-function clearTripRoutes() { 
-
-    analyticsTripLayers.forEach(layer => { 
-
-        try { 
-
-            analyticsMapCore.map.removeLayer(layer); 
-
-        } catch (e) {} 
-
-    }); 
-
-    analyticsTripLayers = []; 
-
-} 
-
- 
-
-function clearFrequencyRoutes() { 
-
-    analyticsFrequencyLayers.forEach(layer => { 
-
-        try { 
-
-            analyticsMapCore.map.removeLayer(layer); 
-
-        } catch (e) {} 
-
-    }); 
-
-    analyticsFrequencyLayers = []; 
-
-} 
-
- 
-
-function clearMapOverlays() { 
-
-    clearTripRoutes(); 
-
-    clearFrequencyRoutes(); 
-
- 
-
-    if (analyticsMapCore && analyticsMapCore.hotspotLayer) { 
-
-        analyticsMapCore.hotspotLayer.clearLayers(); 
-
-    } 
-
-} 
-
- 
-
-async function loadTrips() { 
-
-    try { 
-
-        clearTripRoutes(); 
-
- 
-
-        const data = await fetchJSON('/api/trips'); 
-
-        if (data.error) { 
-
-            alert(data.error); 
-
-            return; 
-
-        } 
-
- 
-
-        let drawnCount = 0; 
-
-        let bounds = []; 
-
- 
-
-        data.forEach(trip => { 
-
-            if (!trip.route_geometry) return; 
-
- 
-
-            try { 
-
-                let geom = trip.route_geometry; 
-
-                if (typeof geom === 'string') { 
-
-                    geom = JSON.parse(geom); 
-
-                } 
-
- 
-
-                if (Array.isArray(geom) && geom.length > 1) { 
-
-                    const line = L.polyline(geom, { 
-
-                        color: '#2563eb', 
-
-                        weight: 3, 
-
-                        opacity: 0.65 
-
-                    }).bindPopup(` 
-
-                        <b>${trip.pickup_location || 'Trip'}</b><br> 
-
-                        Patient: ${trip.patient_name || '-'}<br> 
-
-                        Distance: ${(trip.distance_km || 0).toFixed(2)} km<br> 
-
-                        Actual Time: ${(trip.duration_minutes || 0).toFixed(1)} min 
-
-                    `).addTo(analyticsMapCore.map); 
-
- 
-
-                    analyticsTripLayers.push(line); 
-
-                    bounds = bounds.concat(geom); 
-
-                    drawnCount++; 
-
-                } 
-
-            } catch (e) { 
-
-                console.warn('Skipping invalid trip geometry:', trip.id, e); 
-
-            } 
-
-        }); 
-
- 
-
-        if (drawnCount === 0) { 
-
-            alert('No trips with valid route geometry were found.'); 
-
-        } else if (bounds.length > 0) { 
-
-            analyticsMapCore.map.fitBounds(bounds, { padding: [30, 30] }); 
-
-        } 
-
-    } catch (err) { 
-
-        console.error('Failed to load trips:', err); 
-
-        alert('Failed to load trips.'); 
-
-    } 
-
-} 
-
- 
-
-async function loadRouteFrequencyLayer() { 
-
-    try { 
-
-        clearFrequencyRoutes(); 
-
- 
-
-        const data = await fetchJSON('/api/analytics/route-frequency'); 
-
-        if (!data || !data.length) { 
-
-            alert('No route frequency data available.'); 
-
-            return; 
-
-        } 
-
- 
-
-        let bounds = []; 
-
- 
-
-        data.forEach(segment => { 
-
-            const freq = segment.normalized_frequency || 0; 
-
-            let color = '#fbbf24'; 
-
-            let weight = 4; 
-
- 
-
-            if (freq > 0.7) { 
-
-                color = '#ef4444'; 
-
-                weight = 8; 
-
-            } else if (freq > 0.4) { 
-
-                color = '#f97316'; 
-
-                weight = 6; 
-
-            } 
-
- 
-
-            const line = L.polyline(segment.coordinates, { 
-
-                color: color, 
-
-                weight: weight, 
-
-                opacity: 0.7, 
-
-                lineCap: 'round', 
-
-                lineJoin: 'round' 
-
-            }).bindPopup(` 
-
-                <b>Route Segment Frequency</b><br> 
-
-                Used ${segment.frequency} time(s) 
-
-            `).addTo(analyticsMapCore.map); 
-
- 
-
-            analyticsFrequencyLayers.push(line); 
-
-            bounds = bounds.concat(segment.coordinates); 
-
-        }); 
-
- 
-
-        if (bounds.length > 0) { 
-
-            analyticsMapCore.map.fitBounds(bounds, { padding: [30, 30] }); 
-
-        } 
-
-    } catch (err) { 
-
-        console.error('Failed to load route frequency layer:', err); 
-
-    } 
-
-} 
-
- 
-
-async function loadHotspots() { 
-
-    try { 
-
-        const data = await fetchJSON('/api/ml/hotspots'); 
-
-        if (data.error) { 
-
-            alert(data.error); 
-
-            return; 
-
-        } 
-
-        analyticsMapCore.updateHotspots(data); 
-
-    } catch (err) { 
-
-        console.error('Failed to load hotspots:', err); 
-
-    } 
-
-} 
-
- 
-
-function loadCampusOverlay() { 
-
-    if (!analyticsMapCore) return; 
-
- 
-
-    if (typeof analyticsMapCore.loadCampusLocations === 'function') { 
-
-        analyticsMapCore.loadCampusLocations(); 
-
-    } 
-
- 
-
-    if (typeof analyticsMapCore.loadBuildingsOverlay === 'function') { 
-
-        analyticsMapCore.loadBuildingsOverlay(); 
-
-    } 
-
-} 
-
- 
-
-/* ----------------------------- 
-
-   Boot 
-
------------------------------- */ 
-
- 
-
-document.addEventListener('DOMContentLoaded', async () => { 
-
-    analyticsMapCore = new GeoMedMap('analytics-map'); 
-
- 
-
-    if (typeof analyticsMapCore.loadBuildingsOverlay === 'function') { 
-
-        analyticsMapCore.loadBuildingsOverlay(); 
-
-    } 
-
- 
-
-    if (typeof analyticsMapCore.loadCampusLocations === 'function') { 
-
-        analyticsMapCore.loadCampusLocations(); 
-
-    } 
-
- 
-
-    await Promise.all([ 
-
-        loadOverviewKPIs(), 
-
-        loadHighlights(), 
-
-        loadTripsByDayChart(), 
-
-        loadTripsByHourChart(), 
-
-        loadCategoryDistributionChart(), 
-
-        loadHostelDistributionChart(), 
-
-        loadZoneDistributionChart(), 
-
-        loadBusiestAmbulancesChart(), 
-
-        loadPerformanceSummary(), 
-
-        loadForecast() 
-
-    ]); 
-
-}); 
-
- 
+function cleanMapOverlays() {
+    cleanTripRoutes();
+    cleanFrequencyRoutes();
+    cleanZoneLayers();
+}
+
+function cleaMapOverlays() {
+    cleanMapOverlays();
+}
+
+async function loadTrips() {
+    cleanTripRoutes();
+    const data = await fetchJSON('/api/trips');
+
+    let bounds = [];
+    data.forEach(trip => {
+        if (!trip.route_geometry) return;
+
+        try {
+            let geom = trip.route_geometry;
+
+            if (typeof geom === 'string') {
+                geom = JSON.parse(geom);
+            }
+
+            if (Array.isArray(geom) && geom.length > 1) {
+                const line = L.polyline(geom, { color: '#2563eb', weight: 3, opacity: 0.65 }).bindPopup(`
+                <b>${trip.pickup_location || 'Trip'}</b><br>
+                Distance: ${(trip.distance_km || 0).toFixed(2)}km<br>
+                Actual Time: ${(trip.duration_minutes || 0).toFixed(1)}mins
+                `).addTo(analyticsMapCore.map);
+                analyticsTripLayers.push(line);
+                bounds = bounds.concat(geom);
+            }
+        } catch (e) {
+            console.warn("Skipping invalid route geometry:", trip.id, e);
+        }
+    });
+
+    if (bounds.length > 0) {
+        analyticsMapCore.map.fitBounds(bounds, { padding: [25, 25] });
+    }
+}
+
+async function loadRouteFrequencyLayer() {
+    cleanFrequencyRoutes();
+    const data = await fetchJSON('/api/analytics/route-frequency');
+
+    if (!data || !data.length) {
+        alert('No route frequency data available');
+        return;
+    }
+    let bounds = [];
+
+    data.forEach(segment => {
+        let color = "#fbbf24";
+        let weight = 4;
+
+        if (segment.color === 'red') {
+            color = '#ef4444';
+            weight = 8;
+        } else if (segment.color === 'orange') {
+            color = '#f97316';
+            weight = 6;
+        }
+
+        const line = L.polyline(segment.coordinates, { color: color, weight: weight, opacity: 0.75, lineCap: 'round', lineJoin: 'round' }).bindPopup(`
+            <b>Frequently Visited Road Segment</b><br>
+            Used ${segment.frequency} time(s)`).addTo(analyticsMapCore.map);
+        analyticsFrequencyLayers.push(line);
+        bounds = bounds.concat(segment.coordinates);
+    });
+
+    if (bounds.length > 0) {
+        analyticsMapCore.map.fitBounds(bounds, { padding: [25, 25] });
+    }
+}
+
+async function loadEmergencyZones() {
+    cleanZoneLayers();
+
+    const data = await fetchJSON('/api/analytics/emergency-zones');
+
+    if (!data || !data.length) {
+        alert('No emergency zones data available');
+        return;
+    }
+
+    let bounds = [];
+
+    data.forEach(zone => {
+        let color = '#16a34a';
+
+        if (zone.color === 'red') {
+            color = '#ef4444';
+        } else if (zone.color === 'orange') {
+            color = '#f97316'
+        }
+
+        const circle = L.circle([zone.lat, zone.lon], {
+            radius: zone.radius,
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.25,
+            weight: 2
+        }).bindPopup(`
+            <b>${zone.location}</b><br>
+            ${zone.risk})<br>
+            Patients/Requests: ${zone.count}`).addTo(analyticsMapCore.map);
+        analyticsZoneLayers.push(circle);
+        bounds.push([zone.lat, zone.lon]);
+    });
+
+    if (bounds.length > 0) {
+        analyticsMapCore.map.fitBounds(bounds, { padding: [25, 25] });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    analyticsMapCore = new GeoMedMap('analytics-map');
+
+    if (typeof analyticsMapCore.loadBuildingsOverlay === 'function') {
+        analyticsMapCore.loadBuildingsOverlay();
+    }
+
+    if (typeof analyticsMapCore.loadRoadOverlay === 'function') {
+        analyticsMapCore.loadRoadOverlay();
+    }
+
+    await Promise.all([
+        loadSummaryKPIs(),
+        loadTopIncidents(),
+        loadTripsByHourChart(),
+        loadTripsByDayCurrentMonthChart()
+    ]);
+
+});

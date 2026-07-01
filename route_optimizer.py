@@ -13,11 +13,147 @@ Features
 import logging
 import math
 from typing import Dict, List, Optional
+import os
+import json
+import heapq
 
 import requests
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def _load_iitb_road_graph():
+    path = os.path.join(os.getcwd(), 'static', 'data', 'iitb_road_geojson.geojson')
+    
+    if not os.path.exists(path):
+        return None, None
+
+    try:
+        with open(path, 'r', encoding = 'utf-8') as f:
+            data = json.load(f)
+        graph = {}
+        node_lookup = {}
+
+        def key(coord):
+            return (round(coord[0], 7), round(coord[1], 7))
+
+        for feature in data.get('features', []):
+            geom = feature.get('geometry', {})
+            if geom.get('type') != 'LineString':
+                continue
+            coords = geom.get('coordinates', [])
+            if len(coords) < 2:
+                continue
+
+            for i in range(len(coords) - 1):
+                a = coords[i]
+                b = coords [i+1]
+                ka = key(a)
+                kb = key(b)
+
+                node_lookup[ka] = [ka[0], ka[1]]
+                node_lookup[kb] = [kb[0], kb[1]]
+
+                dist = _haversine_km(
+                    [ka[0], ka[1]],
+                    [kb[0], kb[1]]
+                )
+                
+                graph.setdefault(ka, []).append((kb, dist))
+                graph.setdefault(kb, []).append((ka, dist))
+        
+        if not graph:
+            return None, None
+
+        graph = _connect_nearby_graph_nodes(graph, node_lookup, max_distance_km=0.08)
+
+        return graph, node_lookup
+
+    except Exception as e:
+        logger.warning(f"Failed to load IITB road graph: {e}")
+        return None, None
+
+def _connect_nearby_graph_nodes(graph, node_lookup, max_distance_km =0.08):
+    keys = list(node_lookup.keys())
+    for i in range(len(keys)):
+        for j in range(i+1, len(keys)):
+            u, v = keys[i], keys[j]
+            
+            if any(neighbor == v for neighbor, _ in graph.get(u, [])):
+                continue
+            
+            dist = _haversine_km(node_lookup[u], node_lookup[v])
+            if dist <= max_distance_km:
+                graph.setdefault(u, []).append((v, dist))
+                graph.setdefault(v, []).append((u, dist))
+    return graph
+
+def _nearest_graph_node(coords, node_lookup):
+    best_key = None
+    best_dist = float("inf")
+
+    for key, node_coord in node_lookup.items():
+        dist = _haversine_km(coords, node_coord)
+        if dist < best_dist:
+            best_dist = dist
+            best_key = key
+    return best_key
+
+def _dijkstra(graph, start_key, end_key):
+    queue = [(0, start_key, [])]
+    visited = set()
+    
+    while queue:
+        cost, node, path = heapq.heappop(queue)
+        
+        if node in visited:
+            continue
+        
+        visited.add(node)
+        path = path + [node]
+
+        if node == end_key:
+            return cost, path
+        
+        for neighbor_key, weight in graph.get(node, []):
+            if neighbor_key not in visited:
+                heapq.heappush(queue, (cost + weight, neighbor_key, path))
+    
+    return None, []
+
+
+def _try_iitb_road_route(start_coords, end_coords):
+    graph, node_lookup = _load_iitb_road_graph()
+
+    if not graph or not node_lookup:
+        raise Exception("IITB road graph not available")
+
+    start_node = _nearest_graph_node(start_coords, node_lookup)
+    end_node = _nearest_graph_node(end_coords, node_lookup)
+    
+    logger.info(f"IITB route start node: {start_node}, end node: {end_node}")
+
+    if not start_node or not end_node:
+        raise Exception("Could not snap start/end to road network")
+    
+    distance_km, path = _dijkstra(graph, start_node, end_node)
+
+    logger.info(f"IITB road path node count: {len(path)}")
+
+    if not path:
+        raise Exception("No path found in IITB road graph")
+
+    geometry = [[lat, lon] for lon, lat in path]
+
+    average_speed_kmh = 18
+    duration_min = (distance_km / average_speed_kmh) * 60 if distance_km else 0
+
+    return {
+        "distance": round(distance_km, 3),
+        "duration": round(duration_min, 2),
+        "geometry": geometry,
+        "source": "IITB Road GeoJSON"
+    }
 
 
 def calculate_route(
@@ -25,18 +161,28 @@ def calculate_route(
     end_coords: List[float],
     api_key: Optional[str] = None
 ) -> Dict:
+
+
+
+    try:
+        logger.info("Attempting route calculation with IITB road GeoJSON...")
+
+        return _try_iitb_road_route(start_coords, end_coords)
+        
+    except Exception as e:
+        logger.warning(f"IITB road GeoJSON route calculation failed: {e}")
     """
     Parameters
     ----------
     start_coords : [lon, lat]
-    end_coords   : [lon, lat]
-    """
+    end_coords   : [lon, lat]    """
 
     snapped_start = _snap_to_road_osrm(start_coords) or start_coords
     snapped_end = _snap_to_road_osrm(end_coords) or end_coords
 
     crow_distance = _haversine_km(snapped_start, snapped_end)
 
+    
     # ------------------------------------------------------------------
     # Try OSRM first
     # ------------------------------------------------------------------

@@ -93,6 +93,7 @@ class Config:
     # Optional GeoJSON overlay
 
     CAMPUS_BUILDINGS_GEOJSON = '/static/data/iitb_buildings.geojson'
+    CAMPUS_ROADS_GEOJSON = '/static/data/iitb_road_geojson.geojson'
 
     @classmethod
     def get_route_coords(cls, location_name):
@@ -101,6 +102,31 @@ class Config:
     @classmethod
     def get_route_coords(cls, location_name):
         return cls.CAMPUS_ROUTE_OVERRIDES.get(location_name) or cls.CAMPUS_LOCATIONS.get(location_name)   
+
+    @classmethod
+    def get_campus_locations_from_geojson(cls):
+        import os
+        import json
+
+        path = os.path.join(os.getcwd(), 'static', 'data', 'iitb_buildings.geojson')
+        if not os.path.exists(path):
+            return cls.CAMPUS_LOCATIONS
+        try:
+            with open(path, 'r', encoding = 'utf-8') as f:
+                data = json.load(f)
+            locations = {}
+            for feature in data.get('features', []):
+                props = feature.get('properties', {})
+                name = props.get('Name')
+                lat = props.get("latitude")
+                lon = props.get("longitude")
+                if name and lat is not None and lon is not None:
+                    locations[name] = [float(lat),float(lon)]
+            return locations if locations else cls.CAMPUS_LOCATIONS
+        except Exception as e:
+            print(f"Error reading campus geojson: {e}")
+            return cls.CAMPUS_LOCATIONS     
+            
 
 class DevelopmentConfig(Config):
     DEBUG = True

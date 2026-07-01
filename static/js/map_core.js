@@ -59,22 +59,36 @@ class GeoMedMap {
         this.hotspotLayer = L.layerGroup().addTo(this.map);
         this.campusLayer = L.layerGroup().addTo(this.map);
 
+        this.roadLayer = L.geoJSON(null, {
+            style: {
+                color: '#f59e0b',
+                weight: 3,
+                opacity: 0.75
+            },
+            onEachFeature: (feature, layer) => {
+                layer.bindPopup('<b>IITB Internal Road</b>');
+
+            }
+        }).addTo(this.map);
+
         this.buildingLayer = L.geoJSON(null, {
 
-            style: () => ({
-                color: '#475569',
-                weight: 1,
-                fillColor: '#94a3b8',
-                fillOpacity: 0.15
-            }),
-
             pointToLayer: (feature, latlng) => {
-                return L.marker(latlng, { icon: this.icons.campusPOI });
+                const props = feature.properties || {};
+                const hasAccess = props.Ambulance_access === true || props.Ambulance_access === 'true';
+                return L.circlemarker(latlng, {
+                    radius: hasAccess ? 6 : 5,
+                    color: hasAccess ? '#16a34a' : '#64748b',
+                    fillColor: hasAccess ? '#22c55e' : '#94a3b8',
+                    fillOpacity: 0.9,
+                    weight: 2
+                });
             },
 
             onEachFeature: (feature, layer) => {
                 const props = feature.properties || {};
-                layer.bindPopup(`<b>${props.name || 'Campus Building'}</b>`);
+                const access = props.Ambulance_access ? 'Yes' : 'No';
+                layer.bindPopup(`<b>${props.name || 'IITB Location'}</b><br>Ambulance Access: ${access}`);
             }
 
         }).addTo(this.map);
@@ -117,8 +131,8 @@ class GeoMedMap {
                 L.marker([req.latitude, req.longitude], {
                     icon: this.icons.patient
                 })
-                .bindPopup(`<b>Request #${req.id}</b><br>${req.pickup_location}<br>${req.emergency_type}`)
-                .addTo(this.reqLayer);
+                    .bindPopup(`<b>Request #${req.id}</b><br>${req.pickup_location}<br>${req.emergency_type}`)
+                    .addTo(this.reqLayer);
 
             }
 
@@ -138,12 +152,12 @@ class GeoMedMap {
                 fillOpacity: hs.intensity * 0.5,
                 radius: hs.radius_meters
             })
-            .bindPopup(`<b>Hotspot:</b> ${hs.name}`)
-            .addTo(this.hotspotLayer);
+                .bindPopup(`<b>Hotspot:</b> ${hs.name}`)
+                .addTo(this.hotspotLayer);
 
         });
 
-    }    loadCampusLocations() {
+    } loadCampusLocations() {
 
         fetch('/api/gis/campus-locations')
             .then(r => r.json())
@@ -160,13 +174,13 @@ class GeoMedMap {
                         fillOpacity: 0.9,
                         weight: 1
                     })
-                    .bindPopup(`
+                        .bindPopup(`
                         <b>${loc.name}</b><br>
                         Display: ${loc.display_lat.toFixed(6)}, ${loc.display_lon.toFixed(6)}<br>
                         Route: ${loc.route_lat.toFixed(6)}, ${loc.route_lon.toFixed(6)}<br>
                         Override: ${loc.has_override ? 'Yes' : 'No'}
                     `)
-                    .addTo(this.campusLayer);
+                        .addTo(this.campusLayer);
 
                 });
 
@@ -210,6 +224,28 @@ class GeoMedMap {
 
             });
 
+    }
+
+    loadRoadsOverlay() {
+        fetch('/api/gis/roads-overlay')
+            .then(r => r.json())
+            .then(meta => {
+                if (!meta.geojson_url) return null;
+                return fetch(meta.geojson_url);
+            })
+            .then(r => {
+                if (!r || !r.ok) return null;
+                return r.json();
+            })
+            .then(geojson => {
+                if (!geojson) return;
+
+                this.roadLayer.clearLayers();
+                this.roadLayer.addData(geojson);
+            })
+            .catch(err => {
+                console.warn('Road overlay not loaded (add static/data/iitb_road_geojson.geojson later):', err);
+            });
     }
 
 }

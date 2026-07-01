@@ -91,7 +91,7 @@ def index():
 @login_required
 def new_request():
     import config as cfg
-    locations = cfg.Config.CAMPUS_LOCATIONS
+    locations = cfg.Config.get_campus_locations_from_geojson()
     incidents = load_incident_catalog()
     if request.method == 'POST':
         try:
